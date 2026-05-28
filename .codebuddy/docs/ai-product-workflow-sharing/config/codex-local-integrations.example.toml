@@ -2,6 +2,14 @@
 # Copy selected sections into ~/.codex/config.toml.
 # Keep secrets in environment variables. Never commit real tokens.
 
+
+# Beginner note:
+# Lark/Figma/Vercel are advanced integrations. First verify manual copy/paste
+# workflow works, then enable only the MCP server you need.
+# AI API credentials are normally read from your shell environment:
+#   export ANTHROPIC_BASE_URL="https://ai.1bullex.com/api"
+#   export ANTHROPIC_AUTH_TOKEN="示例 Token"
+
 [features]
 rmcp_client = true
 

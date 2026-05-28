@@ -1,5 +1,25 @@
 # OBE AI 协作工作流操作手册
 
+
+## 0. 初学者使用原则
+
+先拿到可用产出，再配置自动化。Lark、Figma、Vercel 都作为进阶能力：
+
+1. 第一轮只用 Codex/Cursor 生成内容。
+2. 将结果手动复制到 Lark、Figma Make 或原型发布记录。
+3. 确认工作流能节省时间后，再配置 MCP/CLI。
+4. 每次只接入一个进阶工具，避免同时排查多个权限问题。
+
+指定文件参数：
+
+| 工具 | 文件 | 参数 |
+|------|------|------|
+| AI API | `.env.local` from `config/ai-api.env.example` | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` |
+| Lark | `.env.local` from `config/lark.env.example` | `LARK_APP_ID`, `LARK_APP_SECRET`, `LARK_WRITE_DRY_RUN` |
+| Figma | `.env.local` from `config/lark.env.example` | `FIGMA_OAUTH_TOKEN`, `FIGMA_API_KEY` |
+| Codex MCP | `~/.codex/config.toml` | copy `[mcp_servers.*]` from `config/codex-local-integrations.example.toml` |
+| Vercel | local shell / Vercel CLI | confirm project root, build command, preview vs production |
+
 ## 1. 使用前准备
 
 ### 本地目录
@@ -93,9 +113,10 @@ Codex：
 
 Figma 衔接方式：
 
-- 低保真 / 高保真设计：用 Figma Make 提示词作为设计起点。
+- 初学者：用 Figma Make 提示词作为设计起点，手动复制给设计师。
+- 进阶：配置 `FIGMA_OAUTH_TOKEN` 或 `FIGMA_API_KEY` 后，通过 Figma MCP 读取/写入。
 - 页面捕获：本地原型可通过 Figma html-to-design capture 导入。
-- 设计稿回写：将 Figma 文件/节点链接回写到 Lark 主文档。
+- 设计稿回写：先手动把 Figma 文件/节点链接回写到 Lark 主文档，熟悉后再自动同步。
 
 ## 4. 开发交付工作流
 
@@ -114,6 +135,8 @@ Figma 衔接方式：
 - 灰度、回滚、监控、测试策略
 
 ## 5. Lark 归档
+
+初学者先手动复制归档；进阶再用 `lark-cli` 或 Lark MCP。自动写入前保持 `LARK_WRITE_DRY_RUN=true`，确认目标空间后再关闭。
 
 推荐 Lark 主文档结构：
 
@@ -165,7 +188,8 @@ PM 最少只需要替换 5 项：
 
 ## 7. 常见失败与回退
 
-- Lark 创建失败：先检查 `lark-cli auth status`，必要时重新登录。
+- AI API 失败：检查启动 Codex/Cursor 的 shell 是否已加载 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`。
+- Lark 创建失败：先手动复制结果；进阶模式再检查 `lark-cli auth status`，必要时重新登录。
 - Figma MCP 不可用：用设计提示词先交给设计师手动进入 Figma Make。
 - Capture pending：检查 URL hash 是否以 `#figmacapture=` 开头。
 - Codex 找不到新 Skill：运行 `./scripts/sync-codebuddy-skills-to-codex.sh` 后重启 Codex。

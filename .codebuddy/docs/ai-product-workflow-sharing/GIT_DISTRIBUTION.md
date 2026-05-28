@@ -16,6 +16,8 @@
 必须提交：
 
 ```text
+README.md
+START_HERE.md
 .codebuddy/docs/ai-product-workflow-sharing/
 .codebuddy/skills/product/web3-cex-product-team.md
 .codebuddy/skills/product/pipelines.yaml
@@ -92,6 +94,8 @@ git ls-files -z | xargs -0 rg -n \
 ```bash
 git status --short
 git add \
+  README.md \
+  START_HERE.md \
   .codebuddy/docs/ai-product-workflow-sharing \
   .codebuddy/skills/product/web3-cex-product-team.md \
   .codebuddy/skills/product/pipelines.yaml \
@@ -110,6 +114,8 @@ git push -u origin main
 ```bash
 git init
 git add \
+  README.md \
+  START_HERE.md \
   .codebuddy/docs/ai-product-workflow-sharing \
   .codebuddy/skills/product/web3-cex-product-team.md \
   .codebuddy/skills/product/pipelines.yaml \
@@ -131,13 +137,13 @@ cd obe-ai-product-workflow
 bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
-配置个人密钥：
+配置个人 AI API：
 
 ```bash
-cp .codebuddy/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
+cp .codebuddy/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
 ```
 
-把真实值填入个人本地环境，不提交到 Git。Notion、Lark、NotebookLM 等外部知识源请使用自己的 workspace / document / notebook，并通过环境变量或本地 MCP 配置接入。
+先只填写 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`。Lark、Figma、Vercel 是进阶能力，建议先手动复制结果，熟悉后再复制 `config/lark.env.example` 中对应参数到 `.env.local`。真实值只放本地，不提交到 Git。
 
 ## 6. 使用者验证方式
 

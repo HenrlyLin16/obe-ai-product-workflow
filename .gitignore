@@ -3,6 +3,8 @@
 *
 
 !.gitignore
+!/README.md
+!/START_HERE.md
 !.codebuddy/
 !.codebuddy/docs/
 !.codebuddy/docs/ai-product-workflow-sharing/

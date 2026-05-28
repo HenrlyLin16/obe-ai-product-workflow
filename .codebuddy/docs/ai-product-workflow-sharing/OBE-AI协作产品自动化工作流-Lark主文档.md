@@ -4,6 +4,45 @@
 > 本地源文件：`.codebuddy/docs/ai-product-workflow-sharing/`  
 > Demo 沙盒功能：合约交易页价格提醒提醒方式优化。
 
+
+## 0. 新手先看这 5 步
+
+第一次使用不要先配置 Lark、Figma、Vercel 自动化。先手动复制结果，确认这套工作流能节省你的 PRD、评审和验收时间。
+
+1. 打开 GitHub 仓库，先读 `START_HERE.md`。
+2. 按 README 安装本地 Skill，并在 `.env.local` 配置 `ANTHROPIC_BASE_URL` 与 `ANTHROPIC_AUTH_TOKEN`。
+3. 在 Codex 或 Cursor 复制“第一次使用推荐输入”，先跑 `feature-discovery`。
+4. 将输出结果手动复制到 Lark，作为团队协作初稿。
+5. 熟悉后再按需配置 Lark/Figma/Vercel 的 MCP 或 CLI 自动同步。
+
+### 第一次使用推荐输入
+
+```text
+召唤产品专家团队，对以下想法走 feature-discovery：
+用户在合约交易页设置价格提醒时，希望能选择站内通知、邮件、Push 三种提醒方式，并能在触发前确认风险提示，避免错过关键价格或误以为系统会自动下单。
+
+请输出做/不做/延后/缩小范围判断、目标用户、成功指标、非目标、关键风险、下一步入口。
+```
+
+预期结果：先得到一个可讨论的需求澄清结论，而不是一次性追求完整自动化。
+
+### 从 GitHub 文件到 Lark 协作
+
+- GitHub 存放：模板、Skill、工作流、示例配置和操作说明。
+- Codex/Cursor 执行：读取 Skill 与提示词，生成 PRD、验收、设计提示词和评审结论。
+- Lark 沉淀：把确认后的输出复制或同步到团队文档，作为项目协作入口。
+- Figma/Vercel 进阶：先手动使用设计提示词和本地原型，熟悉后再自动上传或发布。
+
+### 指定文件参数怎么改
+
+| 场景 | 修改文件 | 参数 | 建议 |
+|------|----------|------|------|
+| 接入 OBE AI API | `.env.local`，从 `config/ai-api.env.example` 复制 | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` | 必配；真实 Token 不进 Git |
+| Lark 自动同步 | `.env.local`，从 `config/lark.env.example` 复制 | `LARK_APP_ID`, `LARK_APP_SECRET`, `LARK_WRITE_DRY_RUN` | 进阶；先保持 dry-run |
+| Figma MCP | `.env.local` + Codex/Cursor MCP 配置 | `FIGMA_OAUTH_TOKEN` 或 `FIGMA_API_KEY` | 进阶；先手动复制提示词到 Figma Make |
+| Codex MCP | `~/.codex/config.toml` | `[mcp_servers.*]` | 只复制自己要用的 server 段 |
+| 自定义工作流 | `.codebuddy/skills/product/pipelines.yaml` | `trigger_keywords`, `steps`, `quality_gates` | 产品负责人维护，初学者不要先改 |
+
 ## 1. 这套工作流解决什么问题
 
 产品与设计、开发协作中常见问题：
@@ -95,6 +134,9 @@ PM 使用时最少只改 5 项：
 
 ## 6. 工具打通方式
 
+> 初学者原则：Lark、Figma、Vercel 都先手动复制结果；当你确认每一步产出有用后，再开启 MCP/CLI 自动同步。
+
+
 ### Codex / Cursor
 
 - `.codebuddy/skills` 是 Skill 单一事实源。
@@ -103,12 +145,22 @@ PM 使用时最少只改 5 项：
 
 ### Figma
 
-- 设计提示词：`web3-prd-figma-prompt`
-- 设计读取/写入：Figma MCP
-- 本地页面导入 Figma：html-to-design capture
+初学者：先用 `web3-prd-figma-prompt` 生成设计提示词，手动复制给设计师或 Figma Make。
+
+进阶：再配置 Figma MCP。
+
+- 参数位置：`.env.local` 中的 `FIGMA_OAUTH_TOKEN` 或 `FIGMA_API_KEY`。
+- Codex 配置：复制 `config/codex-local-integrations.example.toml` 中 `[mcp_servers.figma]` 段到 `~/.codex/config.toml`。
+- 本地页面导入 Figma：html-to-design capture。
 - 注意：capture URL 的 hash 必须以 `#figmacapture=` 开头。
 
 ### Lark
+
+初学者：先手动复制 Codex/Cursor 输出到 Lark 主文档。
+
+进阶：再配置 CLI/MCP 自动同步。
+
+参数位置：`.env.local` 中的 `LARK_APP_ID`、`LARK_APP_SECRET`、`LARK_WRITE_DRY_RUN`。首次联调建议保持 `LARK_WRITE_DRY_RUN=true`。
 
 可用工具：
 
