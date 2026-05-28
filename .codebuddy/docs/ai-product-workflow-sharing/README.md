@@ -1,14 +1,15 @@
 # OBE AI 协作产品自动化工作流包
 
-本目录用于 OBE 产品部门内部分享与落地。
+本目录用于公开分发一套可自定义的 AI 产品协作工作流模板，覆盖 PRD、设计衔接、工程计划评审、测试验收、Lark/Figma/Codex/Cursor 协作等场景。
 
-## 给同事的最快使用方式
+## 最快使用方式
 
-适用场景：其他产品同事从 Git 拉取本仓库或本目录后，在自己的本地 Codex / Cursor 中启用同一套产品工作流。
+适用场景：从 GitHub 拉取本仓库后，在自己的本地 Codex / Cursor 中启用同一套产品工作流。
 
 ```bash
-cd <your-onebullex-workspace>
-./.codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
+cd obe-ai-product-workflow
+bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
 安装脚本会做三件事：
@@ -25,7 +26,7 @@ bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.
 
 ## 文件说明
 
-- `OBE-AI协作产品自动化工作流-Lark主文档.md`：Lark 主入口内容
+- `OBE-AI协作产品自动化工作流-Lark主文档.md`：可复制到 Lark 的主文档模板
 - `OBE-AI协作产品自动化工作流-分享稿.md`：分享正文
 - `OBE-AI协作工作流-操作手册.md`：给 PM/设计师的操作手册
 - `OBE-AI协作工作流-Demo脚本.md`：10-15 分钟现场 Demo 脚本
@@ -55,18 +56,17 @@ bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.
 - 个人 `.env`
 - `.DS_Store`
 - 本机生成的 `.cursor/skills` 或 `~/.codex/skills` 副本
+- 个人本机路径
+- 内部 Lark / Notion / NotebookLM URL 或页面 ID
 - 未经脱敏的历史 demo / scripts 文件
 
 ## 同步到 Lark
 
-当前 Lark 主文档：
-
-- https://www.larksuite.com/docx/VdOndMhkroziXzxMKkHlihaXg5e
-- 同步记录：`lark-sync-log.md`
+本仓库不包含任何私有 Lark 文档链接。使用者可以把主文档模板创建到自己的 Lark 空间：
 
 ```bash
 lark-cli docs +create \
-  --title "OBE 产品部门 AI 协作产品自动化工作流" \
+  --title "OBE AI 协作产品自动化工作流" \
   --markdown @.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
 ```
 
@@ -81,19 +81,20 @@ lark-cli docs +update \
 
 ## 安全检查
 
-同步前执行：
+公开发布前执行：
 
 ```bash
 rg -n "ntn_[A-Za-z0-9]|figd_[A-Za-z0-9]|AIza[0-9A-Za-z_-]|prj_[A-Za-z0-9]" .codebuddy/docs/ai-product-workflow-sharing
+git ls-files -z | xargs -0 rg -n "[l]injinhong|[g]mail|/[U]sers/|[l]arksuite\\.com/docx|[n]otebooklm\\.google\\.com/notebook|[0-9a-f]{32}|私有仓[库]|内[部] Git|部门内[部]|项目内[部]知识|内[部]知识库"
 ```
 
 若有结果，先脱敏再同步。
 
-完整 Git 分发范围的扫描命令见 `GIT_DISTRIBUTION.md`。不要直接扫描通过后提交整个工作区；本工作区历史脚本中可能存在旧的硬编码示例密钥。
+完整 Git 分发范围的扫描命令见 `GIT_DISTRIBUTION.md`。只提交本仓库明确放行的文件，不提交完整业务工作区。
 
 ## 本地配置
 
-同事拉取 Git 后只需要配置自己的环境变量，不需要改模板文件。
+使用者拉取 Git 后只需要配置自己的环境变量，不需要改模板文件。
 
 ```bash
 cp .codebuddy/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
@@ -106,4 +107,4 @@ cp .codebuddy/docs/ai-product-workflow-sharing/config/lark.env.example .env.loca
 - `LARK_APP_ID`
 - `LARK_APP_SECRET`
 
-真实值只放在本地 shell、系统 keychain、`.env.local` 或个人 Codex/Cursor 配置里，不写回 Git。
+真实值只放在本地 shell、系统 keychain、`.env.local` 或个人 Codex/Cursor 配置里，不写回 Git。Notion、Lark、NotebookLM 等知识源请接入自己的 workspace / document / notebook。

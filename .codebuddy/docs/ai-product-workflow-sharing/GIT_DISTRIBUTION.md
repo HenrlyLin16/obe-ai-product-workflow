@@ -1,14 +1,15 @@
-# Git 分发与同事本地配置指南
+# Public Git 分发与本地配置指南
 
-目标：把 OBE AI 协作产品自动化工作流包上传到 Git，让其他产品同事可以拉取后在本地 Codex / Cursor 中完成配置和复用。
+目标：把 OBE AI 协作产品自动化工作流包作为公开模板仓库发布，让使用者可以通过 GitHub 拉取后，在自己的 Codex / Cursor 环境中完成配置和自定义。
 
 ## 1. 推荐仓库形态
 
-优先级从高到低：
+本包按 Public GitHub 仓库处理：
 
-1. **放入现有 Onebullex 内部 Git 仓库**：最适合和 `.codebuddy/skills`、产品文档、同步脚本保持一致。
-2. **创建独立私有仓库**：适合把工作流包抽象成部门工具包，减少对完整 Onebullex 工作区的依赖。
-3. **只上传 Lark 附件**：不推荐，无法版本化，也不方便 Codex/Cursor 拉取。
+- 仓库名：`obe-ai-product-workflow`
+- 公开地址：`https://github.com/HenrlyLin16/obe-ai-product-workflow`
+- 仓库内容只包含可分发的工作流文档、模板、产品 Skill 与同步脚本。
+- 不依赖完整业务工作区，不提交私有文档、个人路径、私有知识源链接或真实密钥。
 
 ## 2. 建议提交内容
 
@@ -42,7 +43,9 @@ tools/lark-mcp-server/docs/
 .cursor/skills/
 ~/.codex/skills/
 真实 Token / API Key / Secret
-旧 demo 脚本或历史工具脚本，除非已完成密钥扫描和脱敏
+个人本机路径
+内部 Lark / Notion / NotebookLM URL 或页面 ID
+未经脱敏的历史 demo / scripts 文件
 ```
 
 ## 3. 上传前检查
@@ -73,7 +76,14 @@ rg -n "^(GEMINI_API_KEY|FIGMA_API_KEY|NOTION_TOKEN|LARK_APP_SECRET|LARK_APP_ID)\
 
 扫描结果只能出现示例命令或 `${ENV_VAR}` 占位，不能出现真实值。
 
-注意：当前 Onebullex 工作区历史 `scripts/` 下存在旧 demo 文件和硬编码示例密钥，不应把整个 `scripts/` 目录作为部门分发包上传。
+继续执行公开发布检查：
+
+```bash
+git ls-files -z | xargs -0 rg -n \
+  "[l]injinhong|[g]mail|/[U]sers/|[l]arksuite\\.com/docx|[n]otebooklm\\.google\\.com/notebook|[0-9a-f]{32}|私有仓[库]|内[部] Git|部门内[部]|项目内[部]知识|内[部]知识库"
+```
+
+期望没有输出。若有输出，先改成通用占位或配置说明，再重新提交。
 
 ## 4. Git 命令模板
 
@@ -90,8 +100,9 @@ git add \
   .codebuddy/skills/product/product-test-qa.md \
   scripts/sync-codebuddy-skills-to-cursor.sh \
   scripts/sync-codebuddy-skills-to-codex.sh
-git commit -m "docs: add OBE AI product workflow package"
-git push
+git commit -m "docs: prepare public OBE AI workflow package"
+git remote add origin https://github.com/HenrlyLin16/obe-ai-product-workflow.git
+git push -u origin main
 ```
 
 如果当前目录不是 Git 仓库：
@@ -107,16 +118,16 @@ git add \
   .codebuddy/skills/product/product-test-qa.md \
   scripts/sync-codebuddy-skills-to-cursor.sh \
   scripts/sync-codebuddy-skills-to-codex.sh
-git commit -m "docs: add OBE AI product workflow package"
-git remote add origin <private-git-remote-url>
+git commit -m "docs: prepare public OBE AI workflow package"
+git remote add origin https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 git push -u origin main
 ```
 
-## 5. 同事拉取后的本地配置
+## 5. 使用者拉取后的本地配置
 
 ```bash
-git clone <private-git-remote-url>
-cd <repo>
+git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
+cd obe-ai-product-workflow
 bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
@@ -126,9 +137,9 @@ bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.
 cp .codebuddy/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
 ```
 
-把真实值填入个人本地环境，不提交到 Git。
+把真实值填入个人本地环境，不提交到 Git。Notion、Lark、NotebookLM 等外部知识源请使用自己的 workspace / document / notebook，并通过环境变量或本地 MCP 配置接入。
 
-## 6. 同事验证方式
+## 6. 使用者验证方式
 
 ```bash
 rg -n "feature-discovery|plan-review-gauntlet|engineering-plan-review" .codebuddy/skills/product

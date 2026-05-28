@@ -7,7 +7,7 @@
 从项目根目录执行：
 
 ```bash
-cd /Users/jingxing/Desktop/Onebullex
+cd <repo-root>
 ```
 
 核心文件：
