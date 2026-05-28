@@ -142,7 +142,7 @@ Agent 执行（标准 5 步）:
      outputMode: "existingFile", fileKey: "<从 Figma URL 提取>", nodeId: "<从 URL node-id 提取，- 替换为 :>"
    - 用 Shell open 打开（**hash 必须以 `#figmacapture=` 开头**，否则官方 `capture.js` 不触发，`pending` 永久）：  
      `open "http://localhost:<port>/#figmacapture=<captureId>&figmaendpoint=<endpoint>&figmadelay=3000&figmaselector=<css>[&其它原型参数…]"`  
-     若同页还需 `figmamc` / `figmcat` 等，**必须接在** `figmaselector` 之后，勿放在 `figmacapture` 之前；Web 消息中心请优先使用已修正的 **`buildWebInboxFigmaCaptureUrl`**（`Web Futures 2.0/src/features/inbox/figmaInboxCapture.ts`）。**全客户端对齐说明**：`.codebuddy/docs/FIGMA-MCP-CAPABILITIES.md`。
+     若同页还需 `figmamc` / `figmcat` 等，**必须接在** `figmaselector` 之后，勿放在 `figmacapture` 之前；Web 消息中心请优先使用已修正的 **`buildWebInboxFigmaCaptureUrl`**（`Web Futures 2.0/src/features/inbox/figmaInboxCapture.ts`）。**全客户端对齐说明**：`workflow/docs/FIGMA-MCP-CAPABILITIES.md`。
    - figmaselector 常用值：
      .page → 仅页面主体（不含外壳背景）
      .phone → 手机框（含底部导航）
@@ -174,7 +174,7 @@ Agent 执行（标准 5 步）:
 4. **捕获完成后必须还原代码** — 恢复 `useState` 初始值 + 移除 `capture.js` 脚本
 5. **不要在 URL hash 中使用 `figmaselector=*`（手动选择模式）做自动化** — 会阻塞页面交互，用明确的 CSS 选择器代替
 6. **`location.hash` 必须以 `#figmacapture=` 开头** — 官方 `https://mcp.figma.com/mcp/html-to-design/capture.js` 否则 `shouldCapture` 为 false：无工具栏、MCP 一直 `pending`；**禁止** `#figmamc=...&figmacapture=...` 这类顺序
-7. **Cursor Figma 插件 8 Skills + MCP 全工具清单** — 与 Claude / Codex / CodeBuddy 对齐时以 **`.codebuddy/docs/FIGMA-MCP-CAPABILITIES.md`** 为 SSOT（含 `use_figma` / `create_new_file` / `generate_diagram` 前置读 Skill 的约定）
+7. **Cursor Figma 插件 8 Skills + MCP 全工具清单** — 与 Claude / Codex / Cursor 等客户端对齐时以 **`workflow/docs/FIGMA-MCP-CAPABILITIES.md`** 为 SSOT（含 `use_figma` / `create_new_file` / `generate_diagram` 前置读 Skill 的约定）
 
 ### 1.1b 线性图标资源（Feather Icons）
 
@@ -283,7 +283,7 @@ Agent 执行:
 
 **方式 2：手动调用**
 
-在 CodeBuddy 或 Cursor 中直接提问：
+在 Codex 或 Cursor 中直接提问：
 
 ```
 Query my documentation about 永续合约强平机制
@@ -563,10 +563,10 @@ Agent 执行:
 
 当用户需要 **交易全链路、风控状态机、模块边界、泳道/时序** 等 **可编辑白板图**（非 Figma 高保真、非纯 Mermaid 文字）时：
 
-1. **加载协作 Skill**：读取并遵循 [`.codebuddy/skills/general/excalidraw-diagram/SKILL.md`](.codebuddy/skills/general/excalidraw-diagram/SKILL.md)（与 `.cursor/skills/excalidraw-diagram/SKILL.md` 同步）。
+1. **加载协作 Skill**：读取并遵循 [`workflow/skills/general/excalidraw-diagram/SKILL.md`](workflow/skills/general/excalidraw-diagram/SKILL.md)（与 `.cursor/skills/excalidraw-diagram/SKILL.md` 同步）。
 2. **主导先定骨架**：由本 Skill 先确定术语、模块边界与事实关系，再生成图解，避免图示与业务规则冲突。
 3. **产出路径**：建议与 PRD 资产同域：`产品设计/需求文档（PRD）/03-原型与设计资产/diagrams/`，文件命名 `OBE-{主题}-*.excalidraw`；按需同目录输出配套 PNG（经 Skill 内 **Render & Validate** 闭环自检）。
-4. **渲染环境**：在 `.codebuddy/skills/general/excalidraw-diagram/references/` 执行 `uv sync` 与 `uv run playwright install chromium`（一次性）；具体命令见该 Skill 正文。
+4. **渲染环境**：在 `workflow/skills/general/excalidraw-diagram/references/` 执行 `uv sync` 与 `uv run playwright install chromium`（一次性）；具体命令见该 Skill 正文。
 
 ### 2. 产品与规则能力
 

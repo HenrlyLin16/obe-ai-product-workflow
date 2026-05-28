@@ -98,7 +98,7 @@ Demo 功能：合约交易页价格提醒提醒方式优化
 实时路径：
 
 ```bash
-lark-cli docs +create --title "OBE AI 协作工作流 Demo - 合约价格提醒" --markdown @.codebuddy/docs/ai-product-workflow-sharing/demo-outputs/沙盒功能-Lark归档示例.md
+lark-cli docs +create --title "OBE AI 协作工作流 Demo - 合约价格提醒" --markdown @workflow/docs/ai-product-workflow-sharing/demo-outputs/沙盒功能-Lark归档示例.md
 ```
 
 回退路径：

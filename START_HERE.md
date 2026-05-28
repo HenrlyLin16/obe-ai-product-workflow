@@ -1,37 +1,37 @@
-# Start Here: OBE AI Product Workflow For Beginners
+# 新手从这里开始
 
-This guide is for teammates who want useful output quickly without understanding MCP, YAML, or Skill internals first.
+这份文档给第一次使用 OBE AI 产品工作流的同事。你不需要先理解 MCP、YAML 或 Skill 内部结构，先跑通一个可用结果即可。
 
-## 1. Pick Your Role
+## 1. 先选你的角色
 
-| I am... | Start with | Goal |
-|---------|------------|------|
-| Product manager | `feature-discovery` -> `prd-and-qa` | Turn an idea into PRD and acceptance criteria |
-| Designer | `web3-prd-figma-prompt` | Turn PRD into Figma-ready design input |
-| Product lead | `plan-review-gauntlet` | Review product, UX, engineering, and QA risks |
-| New teammate | Demo prompt below | Prove the workflow works in 15 minutes |
+| 你的角色 | 先用哪个工作流 | 目标 |
+|----------|----------------|------|
+| 产品经理 | `feature-discovery` -> `prd-and-qa` | 把想法变成 PRD 和验收标准 |
+| 设计师 | `web3-prd-figma-prompt` | 把 PRD 变成 Figma 设计输入 |
+| 产品负责人 | `plan-review-gauntlet` | 让产品、体验、工程、测试一起评审风险 |
+| 新同事 | 下面的 Demo 提示词 | 15 分钟确认工作流能跑通 |
 
-## 2. First-Time Setup
+## 2. 第一次安装
 
 ```bash
 git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 cd obe-ai-product-workflow
-cp .codebuddy/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
-bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+cp workflow/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
+bash workflow/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
-Open `.env.local` and replace only these values:
+打开 `.env.local`，只替换这两个值：
 
 ```bash
 ANTHROPIC_BASE_URL="https://ai.1bullex.com/api"
 ANTHROPIC_AUTH_TOKEN="示例 Token"
 ```
 
-Keep real tokens local. Do not commit `.env.local`.
+真实 Token 只保存在本地，不提交到 Git。
 
-## 3. Your First 15-Minute Demo
+## 3. 第一个 15 分钟 Demo
 
-Copy this into Codex or Cursor:
+把下面内容复制到 Codex 或 Cursor：
 
 ```text
 召唤产品专家团队，对以下想法走 feature-discovery：
@@ -40,43 +40,43 @@ Copy this into Codex or Cursor:
 请输出：做/不做/延后/缩小范围判断、目标用户、成功指标、非目标、关键风险、下一步入口。
 ```
 
-Expected output:
+你应该得到：
 
-- A clear decision such as `narrow_scope`.
-- Target users and scenarios.
-- Success metrics and non-goals.
-- Risks and next workflow recommendation.
+- 一个清晰结论，例如 `narrow_scope`。
+- 目标用户和使用场景。
+- 成功指标、非目标和关键风险。
+- 下一步建议，例如进入 `prd-and-qa`。
 
-## 4. The Three Beginner Workflows
+## 4. 新手先掌握这三条
 
-| Workflow | Use when | Copy prompt |
-|----------|----------|-------------|
-| `feature-discovery` | The idea is still vague | `召唤产品专家团队，对以下想法走 feature-discovery：...` |
-| `prd-and-qa` | You need PRD and test cases | `基于上一步结论，走 prd-and-qa：...` |
-| `plan-review-gauntlet` | You need cross-role review | `对该 PRD/方案走 plan-review-gauntlet：...` |
+| 工作流 | 适用场景 | 可复制提示词 |
+|--------|----------|--------------|
+| `feature-discovery` | 想法还模糊 | `召唤产品专家团队，对以下想法走 feature-discovery：...` |
+| `prd-and-qa` | 需要 PRD 和测试用例 | `基于上一步结论，走 prd-and-qa：...` |
+| `plan-review-gauntlet` | 需要多角色评审 | `对该 PRD/方案走 plan-review-gauntlet：...` |
 
-Learn these three first. They already cover most PM work.
+这三条已经覆盖大部分产品经理日常工作。
 
-## 5. Advanced Integrations Come Later
+## 5. Lark / Figma / Vercel 先不要急着自动化
 
-Lark, Figma, and Vercel are advanced capabilities. Use this order:
+建议顺序：
 
-1. Manual first: copy AI output into Lark, Figma Make, or a prototype issue manually.
-2. Configure local parameters only after the manual flow feels useful.
-3. Turn on MCP/CLI automation one integration at a time.
+1. 手动复制 AI 输出到 Lark、Figma Make 或原型发布记录。
+2. 确认这些输出真的能节省你的工作时间。
+3. 再一次只配置一个进阶工具，避免同时排查多个权限问题。
 
-Where to edit parameters:
+需要改的文件和参数：
 
-| Integration | File to copy/edit | Parameters |
-|-------------|-------------------|------------|
-| AI API | `.env.local` from `config/ai-api.env.example` | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` |
-| Lark | `.env.local` from `config/lark.env.example` | `LARK_APP_ID`, `LARK_APP_SECRET`, `LARK_WRITE_DRY_RUN` |
-| Figma | `.env.local` from `config/lark.env.example` | `FIGMA_OAUTH_TOKEN` or `FIGMA_API_KEY` |
-| Codex MCP | `~/.codex/config.toml` using `config/codex-local-integrations.example.toml` | MCP server sections and env var names |
-| Vercel | local shell or Vercel CLI login | `VERCEL_TOKEN` only if your local Vercel workflow requires it |
+| 工具 | 修改文件 | 参数 |
+|------|----------|------|
+| AI API | `.env.local`，来源 `workflow/docs/ai-product-workflow-sharing/config/ai-api.env.example` | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` |
+| Lark | `.env.local`，来源 `workflow/docs/ai-product-workflow-sharing/config/lark.env.example` | `LARK_APP_ID`, `LARK_APP_SECRET`, `LARK_WRITE_DRY_RUN` |
+| Figma | `.env.local` + Codex/Cursor MCP 配置 | `FIGMA_OAUTH_TOKEN` 或 `FIGMA_API_KEY` |
+| Codex MCP | `~/.codex/config.toml` | 从 `config/codex-local-integrations.example.toml` 复制需要的 server 段 |
+| Vercel | 本地 shell 或 Vercel CLI | 项目目录、构建命令、preview/production |
 
-## 6. Next Reading
+## 6. 下一步阅读
 
-- Beginner recipes: `.codebuddy/docs/ai-product-workflow-sharing/docs/beginner-recipes.md`
-- Command cheatsheet: `.codebuddy/docs/ai-product-workflow-sharing/docs/command-cheatsheet.md`
-- Lark-ready master doc: `.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md`
+- 任务食谱：`workflow/docs/ai-product-workflow-sharing/docs/beginner-recipes.md`
+- 命令速查：`workflow/docs/ai-product-workflow-sharing/docs/command-cheatsheet.md`
+- Lark 主文档：`workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md`

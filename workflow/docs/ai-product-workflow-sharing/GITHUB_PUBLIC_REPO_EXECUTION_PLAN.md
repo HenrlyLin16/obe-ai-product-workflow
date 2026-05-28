@@ -46,10 +46,10 @@ git ls-files
 核心内容包括：
 
 ```text
-.codebuddy/docs/ai-product-workflow-sharing/
-.codebuddy/skills/product/
-scripts/sync-codebuddy-skills-to-cursor.sh
-scripts/sync-codebuddy-skills-to-codex.sh
+workflow/docs/ai-product-workflow-sharing/
+workflow/skills/product/
+scripts/sync-workflow-skills-to-cursor.sh
+scripts/sync-workflow-skills-to-codex.sh
 ```
 
 本执行计划文件可作为发布检查说明提交到仓库。如果只希望保留为本地执行记录，执行 `git add` 时不要包含本文件。
@@ -190,16 +190,16 @@ https://github.com/HenrlyLin16/obe-ai-product-workflow
 确认以下文件存在：
 
 ```text
-.codebuddy/docs/ai-product-workflow-sharing/GIT_DISTRIBUTION.md
-.codebuddy/docs/ai-product-workflow-sharing/README.md
-.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
-.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-分享稿.md
-.codebuddy/docs/ai-product-workflow-sharing/templates/
-.codebuddy/skills/product/pipelines.yaml
-.codebuddy/skills/product/engineering-plan-review.md
-.codebuddy/skills/product/web3-prd-figma-prompt.md
-scripts/sync-codebuddy-skills-to-cursor.sh
-scripts/sync-codebuddy-skills-to-codex.sh
+workflow/docs/ai-product-workflow-sharing/GIT_DISTRIBUTION.md
+workflow/docs/ai-product-workflow-sharing/README.md
+workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
+workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-分享稿.md
+workflow/docs/ai-product-workflow-sharing/templates/
+workflow/skills/product/pipelines.yaml
+workflow/skills/product/engineering-plan-review.md
+workflow/skills/product/web3-prd-figma-prompt.md
+scripts/sync-workflow-skills-to-cursor.sh
+scripts/sync-workflow-skills-to-codex.sh
 ```
 
 在终端执行：
@@ -225,13 +225,13 @@ origin 指向 https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 ```bash
 git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 cd obe-ai-product-workflow
-bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+bash workflow/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
 配置个人本地密钥：
 
 ```bash
-cp .codebuddy/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
+cp workflow/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
 ```
 
 真实 `LARK_APP_ID`、`LARK_APP_SECRET`、`FIGMA_API_KEY`、`NOTION_TOKEN` 等只填写在个人本地环境，不提交到 Git。

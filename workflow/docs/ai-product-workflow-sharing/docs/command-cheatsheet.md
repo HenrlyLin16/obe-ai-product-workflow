@@ -7,7 +7,7 @@ This page lists the commands a beginner can copy safely. Replace placeholders lo
 ```bash
 git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 cd obe-ai-product-workflow
-bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+bash workflow/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
 ## 2. Configure AI API
@@ -15,7 +15,7 @@ bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.
 Copy the example:
 
 ```bash
-cp .codebuddy/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
+cp workflow/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
 ```
 
 Edit `.env.local`:
@@ -38,13 +38,13 @@ set +a
 Cursor:
 
 ```bash
-./scripts/sync-codebuddy-skills-to-cursor.sh
+./scripts/sync-workflow-skills-to-cursor.sh
 ```
 
 Codex:
 
 ```bash
-./scripts/sync-codebuddy-skills-to-codex.sh
+./scripts/sync-workflow-skills-to-codex.sh
 ```
 
 Verify:
@@ -61,11 +61,11 @@ Manual first: copy AI output into a Lark document.
 Advanced CLI later:
 
 ```bash
-cp .codebuddy/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
+cp workflow/docs/ai-product-workflow-sharing/config/lark.env.example .env.local
 # Edit LARK_APP_ID, LARK_APP_SECRET, and keep LARK_WRITE_DRY_RUN=true until tested.
 lark-cli docs +create \
   --title "OBE AI 协作产品自动化工作流" \
-  --markdown @.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
+  --markdown @workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
 ```
 
 Parameters to edit:
@@ -107,13 +107,13 @@ Parameters to confirm before publishing:
 ## 7. Find Skill And Workflow Names
 
 ```bash
-rg -n "feature-discovery|prd-and-qa|plan-review-gauntlet|prototype-full" .codebuddy/skills/product
+rg -n "feature-discovery|prd-and-qa|plan-review-gauntlet|prototype-full" workflow/skills/product
 ```
 
 ## 8. Troubleshooting
 
-- Codex cannot find Skills: rerun `./scripts/sync-codebuddy-skills-to-codex.sh` and restart Codex.
-- Cursor cannot find Skills: rerun `./scripts/sync-codebuddy-skills-to-cursor.sh` and restart Cursor.
+- Codex cannot find Skills: rerun `./scripts/sync-workflow-skills-to-codex.sh` and restart Codex.
+- Cursor cannot find Skills: rerun `./scripts/sync-workflow-skills-to-cursor.sh` and restart Cursor.
 - AI API fails: confirm `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are loaded in the shell that starts the client.
 - Lark write fails: use manual copy first; then check `lark-cli auth status` and `LARK_WRITE_DRY_RUN`.
 - Figma capture pending: check `#figmacapture=` hash order and use system Chrome.

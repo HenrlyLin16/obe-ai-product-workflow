@@ -2,7 +2,7 @@
 
 版本：v1.0  
 分享对象：OBE 产品部门（产品经理、设计师、产品负责人）  
-主入口：Lark 文档；本地源文件：`.codebuddy/docs/ai-product-workflow-sharing/`  
+主入口：Lark 文档；本地源文件：`workflow/docs/ai-product-workflow-sharing/`  
 Demo 沙盒功能：合约交易页价格提醒提醒方式优化
 
 ## 1. 为什么要做
@@ -12,7 +12,7 @@ Demo 沙盒功能：合约交易页价格提醒提醒方式优化
 1. **提升本职能效率**：产品经理可以把从想法到 PRD、测试用例、评审结论的重复劳动标准化；设计师可以从清晰的 PRD、设计提示词和验收边界开始工作；产品负责人可以把团队经验沉淀成可复制的流水线。
 2. **提升跨职能协作效率**：产品、设计、测试、开发之间不再靠零散聊天接力，而是用统一产物承接：需求文档、Figma/设计稿链接、验收标准/测试用例、联合评审结论、Lark 归档记录。
 
-当前本地已经具备底座：`.codebuddy/skills/product/pipelines.yaml` 里有产品团队流水线，`.codebuddy/skills/product/web3-cex-product-team.md` 是团队入口，Figma/Codex/Cursor/Lark 的连接方式已有文档。我们要做的是把这些能力包装成部门能用的“工作流包”。
+当前本地已经具备底座：`workflow/skills/product/pipelines.yaml` 里有产品团队流水线，`workflow/skills/product/web3-cex-product-team.md` 是团队入口，Figma/Codex/Cursor/Lark 的连接方式已有文档。我们要做的是把这些能力包装成部门能用的“工作流包”。
 
 ## 2. 工作流全景
 
@@ -74,7 +74,7 @@ Demo 链路：
 
 ### 文件与命名
 
-- 本地源文件：`.codebuddy/docs/ai-product-workflow-sharing/`
+- 本地源文件：`workflow/docs/ai-product-workflow-sharing/`
 - PRD：`产品设计/需求文档（PRD）/OBE-{feature_name}-产品需求文档.md`
 - 测试用例：`产品设计/测试用例/OBE-{feature_name}-测试用例与验收标准.md`
 - 设计提示词：`产品设计/设计提示词/OBE-{feature_name}-Figma设计提示词.md`
@@ -99,10 +99,10 @@ Demo 链路：
 
 ### Codex / Cursor 使用
 
-- `.codebuddy/skills` 是团队 Skill 的单一事实源。
-- Cursor 同步：`./scripts/sync-codebuddy-skills-to-cursor.sh`
-- Codex 同步：`./scripts/sync-codebuddy-skills-to-codex.sh`
-- 新增或修改 Skill 后，先改 `.codebuddy/skills`，再同步到 Cursor/Codex。
+- `workflow/skills` 是团队 Skill 的单一事实源。
+- Cursor 同步：`./scripts/sync-workflow-skills-to-cursor.sh`
+- Codex 同步：`./scripts/sync-workflow-skills-to-codex.sh`
+- 新增或修改 Skill 后，先改 `workflow/skills`，再同步到 Cursor/Codex。
 
 ### 安全
 

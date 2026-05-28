@@ -32,11 +32,11 @@ cd <repo-root>
 
 核心文件：
 
-- 产品团队入口：`.codebuddy/skills/product/web3-cex-product-team.md`
-- 流水线配置：`.codebuddy/skills/product/pipelines.yaml`
-- 协作规范：`.codebuddy/skills/product/SKILL-COLLABORATION-GUIDE.md`
-- Figma MCP 说明：`.codebuddy/docs/FIGMA-MCP-CAPABILITIES.md`
-- Codex 本地接入：`.codebuddy/CODEX-LOCAL-MCP-SKILL-INTEGRATION.md`
+- 产品团队入口：`workflow/skills/product/web3-cex-product-team.md`
+- 流水线配置：`workflow/skills/product/pipelines.yaml`
+- 协作规范：`workflow/skills/product/SKILL-COLLABORATION-GUIDE.md`
+- Figma MCP 说明：`workflow/docs/FIGMA-MCP-CAPABILITIES.md`
+- Codex 本地接入：`workflow/CODEX-LOCAL-MCP-SKILL-INTEGRATION.md`
 - Lark 工具说明：`tools/lark-mcp-server/README.md`
 
 ### 同步 Skill
@@ -44,16 +44,16 @@ cd <repo-root>
 Cursor：
 
 ```bash
-./scripts/sync-codebuddy-skills-to-cursor.sh
+./scripts/sync-workflow-skills-to-cursor.sh
 ```
 
 Codex：
 
 ```bash
-./scripts/sync-codebuddy-skills-to-codex.sh
+./scripts/sync-workflow-skills-to-codex.sh
 ```
 
-同步原则：`.codebuddy/skills` 是单一事实源，不直接编辑 `.cursor/skills` 或 `~/.codex/skills/onebullex` 的生成副本。
+同步原则：`workflow/skills` 是单一事实源，不直接编辑 `.cursor/skills` 或 `~/.codex/skills/onebullex` 的生成副本。
 
 ## 2. 产品经理工作流
 
@@ -192,5 +192,5 @@ PM 最少只需要替换 5 项：
 - Lark 创建失败：先手动复制结果；进阶模式再检查 `lark-cli auth status`，必要时重新登录。
 - Figma MCP 不可用：用设计提示词先交给设计师手动进入 Figma Make。
 - Capture pending：检查 URL hash 是否以 `#figmacapture=` 开头。
-- Codex 找不到新 Skill：运行 `./scripts/sync-codebuddy-skills-to-codex.sh` 后重启 Codex。
-- Cursor 找不到新 Skill：运行 `./scripts/sync-codebuddy-skills-to-cursor.sh`。
+- Codex 找不到新 Skill：运行 `./scripts/sync-workflow-skills-to-codex.sh` 后重启 Codex。
+- Cursor 找不到新 Skill：运行 `./scripts/sync-workflow-skills-to-cursor.sh`。

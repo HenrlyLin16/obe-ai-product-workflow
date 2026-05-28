@@ -223,7 +223,7 @@
 ## 极简调用指令（粘贴到 Agent）
 
 ```text
-请基于 .codebuddy/skills/product/OBE-product-ux-self-check.md：
+请基于 workflow/skills/product/OBE-product-ux-self-check.md：
 1) 列出与「{功能/页面}」相关的检查 ID；
 2) 对每条 P0 给出当前 PRD/原型是否满足的结论（满足/缺口/不适用）；
 3) 缺口处给出可执行的文案或交互补丁建议（不含合约公式改写）。

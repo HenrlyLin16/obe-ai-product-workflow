@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# 将 .codebuddy/skills 同步到 .cursor/skills（SSOT = .codebuddy/skills）
-# 用法：从项目根执行 ./scripts/sync-codebuddy-skills-to-cursor.sh
-# 修改技能时请在 .codebuddy/skills 侧进行，改后执行本脚本同步到 .cursor/skills。
+# 将 workflow/skills 同步到 .cursor/skills（SSOT = workflow/skills）
+# 用法：从项目根执行 ./scripts/sync-workflow-skills-to-cursor.sh
+# 修改技能时请在 workflow/skills 侧进行，改后执行本脚本同步到 .cursor/skills。
 
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CODEBUDDY="${ROOT}/.codebuddy/skills"
+WORKFLOW="${ROOT}/workflow/skills"
 CURSOR="${ROOT}/.cursor/skills"
 DOMAINS="general product investment virtual-world"
 
 # 根目录下不视为「可加载技能」的 .md，不同步
 EXCLUDE_MD="README.md product-skills-analysis-report.md product-team-skill-implementation-summary.md SKILL-COLLABORATION-GUIDE.md investment-advisor-core-capabilities.md"
 
-echo "[sync] CodeBuddy skills -> Cursor skills (SSOT: .codebuddy/skills)"
+echo "[sync] Workflow skills -> Cursor skills (SSOT: workflow/skills)"
 echo ""
 
 for domain in $DOMAINS; do
-  src="${CODEBUDDY}/${domain}"
+  src="${WORKFLOW}/${domain}"
   [ ! -d "$src" ] && continue
   echo "[sync] domain: $domain"
 
@@ -54,4 +54,4 @@ for domain in $DOMAINS; do
   echo ""
 done
 
-echo "[sync] done. Modify skills in .codebuddy/skills, then re-run this script to update .cursor/skills."
+echo "[sync] done. Modify skills in workflow/skills, then re-run this script to update .cursor/skills."

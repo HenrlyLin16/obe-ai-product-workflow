@@ -40,7 +40,7 @@
 - **流水线配置**：[pipelines.yaml](pipelines.yaml)（feature-discovery / plan-review-gauntlet / prd-full / prd-and-qa / futures-feature / ai-feature / ux-audit / prototype-full；体验相关流水线均显式要求引用 [OBE-product-ux-self-check.md](OBE-product-ux-self-check.md)，详见各流水线 `mandatory_references` / `quality_gates`）
 - **团队触发规则**：`.cursor/rules/web3-cex-product-team-trigger.mdc`
 - **单点触发规则**：`.cursor/rules/web3-product-expert-trigger.mdc`
-- **编排与路由**：`.codebuddy/skills/general/workflow-orchestrator.md`（产品团队相关模板）；`universal-router` 中 web3-cex-product-team 与 entry_routing.product_team
+- **编排与路由**：`workflow/skills/general/workflow-orchestrator.md`（产品团队相关模板）；`universal-router` 中 web3-cex-product-team 与 entry_routing.product_team
 
 ---
 

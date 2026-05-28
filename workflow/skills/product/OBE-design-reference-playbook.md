@@ -74,7 +74,7 @@
 ## 4. 给 Agent 的一键指令（可选粘贴）
 
 ```text
-请读取 .codebuddy/skills/product/OBE-design-reference-playbook.md，
+请读取 workflow/skills/product/OBE-design-reference-playbook.md，
 针对「{功能/页面}」：
 1) 按 Playbook §2 优先级给出 2～3 个应对照的来源类型（含至少 1 个「上线产品」或 Mobbin 同类屏）；
 2) 生成 PRD 可用的「参考样本索引」表草稿（含「不采纳点」列）；

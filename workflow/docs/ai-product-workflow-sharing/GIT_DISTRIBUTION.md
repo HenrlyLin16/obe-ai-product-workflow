@@ -18,21 +18,21 @@
 ```text
 README.md
 START_HERE.md
-.codebuddy/docs/ai-product-workflow-sharing/
-.codebuddy/skills/product/web3-cex-product-team.md
-.codebuddy/skills/product/pipelines.yaml
-.codebuddy/skills/product/engineering-plan-review.md
-.codebuddy/skills/product/web3-prd-figma-prompt.md
-.codebuddy/skills/product/product-test-qa.md
-scripts/sync-codebuddy-skills-to-cursor.sh
-scripts/sync-codebuddy-skills-to-codex.sh
+workflow/docs/ai-product-workflow-sharing/
+workflow/skills/product/web3-cex-product-team.md
+workflow/skills/product/pipelines.yaml
+workflow/skills/product/engineering-plan-review.md
+workflow/skills/product/web3-prd-figma-prompt.md
+workflow/skills/product/product-test-qa.md
+scripts/sync-workflow-skills-to-cursor.sh
+scripts/sync-workflow-skills-to-codex.sh
 ```
 
 按需提交：
 
 ```text
-.codebuddy/docs/FIGMA-MCP-CAPABILITIES.md
-.codebuddy/CODEX-LOCAL-MCP-SKILL-INTEGRATION.md
+workflow/docs/FIGMA-MCP-CAPABILITIES.md
+workflow/CODEX-LOCAL-MCP-SKILL-INTEGRATION.md
 tools/lark-mcp-server/docs/
 ```
 
@@ -55,25 +55,25 @@ tools/lark-mcp-server/docs/
 ```bash
 cd <repo-root>
 
-find .codebuddy/docs/ai-product-workflow-sharing -name ".DS_Store" -print
+find workflow/docs/ai-product-workflow-sharing -name ".DS_Store" -print
 
 rg -n "ntn_[A-Za-z0-9]|figd_[A-Za-z0-9]|AIza[0-9A-Za-z_-]|prj_[A-Za-z0-9]" \
-  .codebuddy/docs/ai-product-workflow-sharing \
-  .codebuddy/skills/product/web3-cex-product-team.md \
-  .codebuddy/skills/product/pipelines.yaml \
-  .codebuddy/skills/product/engineering-plan-review.md \
-  .codebuddy/skills/product/web3-prd-figma-prompt.md \
-  .codebuddy/skills/product/product-test-qa.md \
-  scripts/sync-codebuddy-skills-to-cursor.sh \
-  scripts/sync-codebuddy-skills-to-codex.sh
+  workflow/docs/ai-product-workflow-sharing \
+  workflow/skills/product/web3-cex-product-team.md \
+  workflow/skills/product/pipelines.yaml \
+  workflow/skills/product/engineering-plan-review.md \
+  workflow/skills/product/web3-prd-figma-prompt.md \
+  workflow/skills/product/product-test-qa.md \
+  scripts/sync-workflow-skills-to-cursor.sh \
+  scripts/sync-workflow-skills-to-codex.sh
 
 rg -n "^(GEMINI_API_KEY|FIGMA_API_KEY|NOTION_TOKEN|LARK_APP_SECRET|LARK_APP_ID)\\s*=\\s*[^\\s#]+" \
   --glob '!*.example' \
   --glob '!*.example.toml' \
-  .codebuddy/docs/ai-product-workflow-sharing \
-  .codebuddy/skills/product \
-  scripts/sync-codebuddy-skills-to-cursor.sh \
-  scripts/sync-codebuddy-skills-to-codex.sh
+  workflow/docs/ai-product-workflow-sharing \
+  workflow/skills/product \
+  scripts/sync-workflow-skills-to-cursor.sh \
+  scripts/sync-workflow-skills-to-codex.sh
 ```
 
 扫描结果只能出现示例命令或 `${ENV_VAR}` 占位，不能出现真实值。
@@ -96,14 +96,14 @@ git status --short
 git add \
   README.md \
   START_HERE.md \
-  .codebuddy/docs/ai-product-workflow-sharing \
-  .codebuddy/skills/product/web3-cex-product-team.md \
-  .codebuddy/skills/product/pipelines.yaml \
-  .codebuddy/skills/product/engineering-plan-review.md \
-  .codebuddy/skills/product/web3-prd-figma-prompt.md \
-  .codebuddy/skills/product/product-test-qa.md \
-  scripts/sync-codebuddy-skills-to-cursor.sh \
-  scripts/sync-codebuddy-skills-to-codex.sh
+  workflow/docs/ai-product-workflow-sharing \
+  workflow/skills/product/web3-cex-product-team.md \
+  workflow/skills/product/pipelines.yaml \
+  workflow/skills/product/engineering-plan-review.md \
+  workflow/skills/product/web3-prd-figma-prompt.md \
+  workflow/skills/product/product-test-qa.md \
+  scripts/sync-workflow-skills-to-cursor.sh \
+  scripts/sync-workflow-skills-to-codex.sh
 git commit -m "docs: prepare public OBE AI workflow package"
 git remote add origin https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 git push -u origin main
@@ -116,14 +116,14 @@ git init
 git add \
   README.md \
   START_HERE.md \
-  .codebuddy/docs/ai-product-workflow-sharing \
-  .codebuddy/skills/product/web3-cex-product-team.md \
-  .codebuddy/skills/product/pipelines.yaml \
-  .codebuddy/skills/product/engineering-plan-review.md \
-  .codebuddy/skills/product/web3-prd-figma-prompt.md \
-  .codebuddy/skills/product/product-test-qa.md \
-  scripts/sync-codebuddy-skills-to-cursor.sh \
-  scripts/sync-codebuddy-skills-to-codex.sh
+  workflow/docs/ai-product-workflow-sharing \
+  workflow/skills/product/web3-cex-product-team.md \
+  workflow/skills/product/pipelines.yaml \
+  workflow/skills/product/engineering-plan-review.md \
+  workflow/skills/product/web3-prd-figma-prompt.md \
+  workflow/skills/product/product-test-qa.md \
+  scripts/sync-workflow-skills-to-cursor.sh \
+  scripts/sync-workflow-skills-to-codex.sh
 git commit -m "docs: prepare public OBE AI workflow package"
 git remote add origin https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 git push -u origin main
@@ -134,13 +134,13 @@ git push -u origin main
 ```bash
 git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 cd obe-ai-product-workflow
-bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+bash workflow/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
 配置个人 AI API：
 
 ```bash
-cp .codebuddy/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
+cp workflow/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
 ```
 
 先只填写 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`。Lark、Figma、Vercel 是进阶能力，建议先手动复制结果，熟悉后再复制 `config/lark.env.example` 中对应参数到 `.env.local`。真实值只放本地，不提交到 Git。
@@ -148,7 +148,7 @@ cp .codebuddy/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.lo
 ## 6. 使用者验证方式
 
 ```bash
-rg -n "feature-discovery|plan-review-gauntlet|engineering-plan-review" .codebuddy/skills/product
+rg -n "feature-discovery|plan-review-gauntlet|engineering-plan-review" workflow/skills/product
 test -d ~/.codex/skills/onebullex && echo "Codex skills installed"
 test -d .cursor/skills && echo "Cursor skills installed"
 ```

@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
-# Sync .codebuddy/skills into Codex local skills.
-# SSOT = .codebuddy/skills. Destination defaults to ~/.codex/skills/onebullex.
-# Usage: ./scripts/sync-codebuddy-skills-to-codex.sh [destination]
+# Sync workflow/skills into Codex local skills.
+# SSOT = workflow/skills. Destination defaults to ~/.codex/skills/onebullex.
+# Usage: ./scripts/sync-workflow-skills-to-codex.sh [destination]
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CODEBUDDY="${ROOT}/.codebuddy/skills"
+WORKFLOW="${ROOT}/workflow/skills"
 DEST="${1:-${HOME}/.codex/skills/onebullex}"
 DOMAINS="general product investment virtual-world"
 EXCLUDE_MD="README.md product-skills-analysis-report.md product-team-skill-implementation-summary.md SKILL-COLLABORATION-GUIDE.md investment-advisor-core-capabilities.md"
 
-if [[ ! -d "$CODEBUDDY" ]]; then
-  echo "[sync] missing source: $CODEBUDDY" >&2
+if [[ ! -d "$WORKFLOW" ]]; then
+  echo "[sync] missing source: $WORKFLOW" >&2
   exit 1
 fi
 
 mkdir -p "$DEST"
 
-echo "[sync] CodeBuddy skills -> Codex skills"
-echo "[sync] source: $CODEBUDDY"
+echo "[sync] Workflow skills -> Codex skills"
+echo "[sync] source: $WORKFLOW"
 echo "[sync] dest:   $DEST"
 echo ""
 
 for domain in $DOMAINS; do
-  src="${CODEBUDDY}/${domain}"
+  src="${WORKFLOW}/${domain}"
   [[ ! -d "$src" ]] && continue
   echo "[sync] domain: $domain"
 

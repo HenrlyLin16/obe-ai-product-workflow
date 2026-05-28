@@ -3,7 +3,7 @@
 ## OBE AI 协作产品自动化工作流
 
 - sync_mode: template
-- source_path: `.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md`
+- source_path: `workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md`
 - doc_id: `[YOUR_LARK_DOC_ID]`
 - doc_url: `[YOUR_LARK_DOC_URL]`
 - synced_at: `[YOUR_SYNC_TIME]`
@@ -15,7 +15,7 @@
 ```bash
 lark-cli docs +create \
   --title "OBE AI 协作产品自动化工作流" \
-  --markdown @.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
+  --markdown @workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
 ```
 
 ## 更新命令
@@ -24,5 +24,5 @@ lark-cli docs +create \
 lark-cli docs +update \
   --doc "[YOUR_LARK_DOC_URL_OR_TOKEN]" \
   --mode overwrite \
-  --markdown @.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
+  --markdown @workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
 ```

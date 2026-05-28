@@ -30,7 +30,7 @@
 | Figma MCP（进阶） | `.env.local` + `config/codex-local-integrations.example.toml` | `FIGMA_OAUTH_TOKEN` 或 `FIGMA_API_KEY` |
 | Codex MCP（进阶） | `~/.codex/config.toml` | 复制所需 `[mcp_servers.*]` 段落 |
 
-初学者不要直接修改：`.codebuddy/skills/product/pipelines.yaml`、Skill 文件、`.cursor/skills`、`~/.codex/skills`。
+初学者不要直接修改：`workflow/skills/product/pipelines.yaml`、Skill 文件、`.cursor/skills`、`~/.codex/skills`。
 
 ## GitHub 文件地图
 
@@ -42,7 +42,7 @@
 | `OBE-AI协作产品自动化工作流-Lark主文档.md` | 要复制到 Lark 作为团队主文档时 |
 | `OBE-AI协作工作流-操作手册.md` | 已经跑通过 Demo，想系统使用时 |
 | `templates/` | 要把输出整理成正式交付物时 |
-| `.codebuddy/skills/product/` | 进阶维护 Skill 或工作流时 |
+| `workflow/skills/product/` | 进阶维护 Skill 或工作流时 |
 
 ## 最快使用方式
 
@@ -51,19 +51,19 @@
 ```bash
 git clone https://github.com/HenrlyLin16/obe-ai-product-workflow.git
 cd obe-ai-product-workflow
-bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+bash workflow/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
 安装脚本会做三件事：
 
 1. 检查核心文件是否存在。
 2. 执行安全扫描，避免把真实 Token 当作模板传播。
-3. 同步 `.codebuddy/skills` 到 Cursor 和 Codex 的本地 Skills 目录。
+3. 同步 `workflow/skills` 到 Cursor 和 Codex 的本地 Skills 目录。
 
 如果脚本不可执行：
 
 ```bash
-bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
+bash workflow/docs/ai-product-workflow-sharing/scripts/install-local-workflow.sh
 ```
 
 ## 文件说明
@@ -86,14 +86,14 @@ bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.
 
 建议把以下内容一起提交到 Git：
 
-- `.codebuddy/docs/ai-product-workflow-sharing/`
-- `.codebuddy/skills/product/web3-cex-product-team.md`
-- `.codebuddy/skills/product/pipelines.yaml`
-- `.codebuddy/skills/product/engineering-plan-review.md`
-- `.codebuddy/skills/product/web3-prd-figma-prompt.md`
-- `.codebuddy/skills/product/product-test-qa.md`
-- `scripts/sync-codebuddy-skills-to-cursor.sh`
-- `scripts/sync-codebuddy-skills-to-codex.sh`
+- `workflow/docs/ai-product-workflow-sharing/`
+- `workflow/skills/product/web3-cex-product-team.md`
+- `workflow/skills/product/pipelines.yaml`
+- `workflow/skills/product/engineering-plan-review.md`
+- `workflow/skills/product/web3-prd-figma-prompt.md`
+- `workflow/skills/product/product-test-qa.md`
+- `scripts/sync-workflow-skills-to-cursor.sh`
+- `scripts/sync-workflow-skills-to-codex.sh`
 
 不要提交：
 
@@ -112,7 +112,7 @@ bash .codebuddy/docs/ai-product-workflow-sharing/scripts/install-local-workflow.
 ```bash
 lark-cli docs +create \
   --title "OBE AI 协作产品自动化工作流" \
-  --markdown @.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
+  --markdown @workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
 ```
 
 如需更新已有文档：
@@ -121,7 +121,7 @@ lark-cli docs +create \
 lark-cli docs +update \
   --doc "<Lark 文档 URL 或 token>" \
   --mode overwrite \
-  --markdown @.codebuddy/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
+  --markdown @workflow/docs/ai-product-workflow-sharing/OBE-AI协作产品自动化工作流-Lark主文档.md
 ```
 
 ## 安全检查
@@ -129,7 +129,7 @@ lark-cli docs +update \
 公开发布前执行：
 
 ```bash
-rg -n "ntn_[A-Za-z0-9]|figd_[A-Za-z0-9]|AIza[0-9A-Za-z_-]|prj_[A-Za-z0-9]" .codebuddy/docs/ai-product-workflow-sharing
+rg -n "ntn_[A-Za-z0-9]|figd_[A-Za-z0-9]|AIza[0-9A-Za-z_-]|prj_[A-Za-z0-9]" workflow/docs/ai-product-workflow-sharing
 git ls-files -z | xargs -0 rg -n "[l]injinhong|[g]mail|/[U]sers/|[l]arksuite\\.com/docx|[n]otebooklm\\.google\\.com/notebook|[0-9a-f]{32}|私有仓[库]|内[部] Git|部门内[部]|项目内[部]知识|内[部]知识库"
 ```
 
@@ -142,7 +142,7 @@ git ls-files -z | xargs -0 rg -n "[l]injinhong|[g]mail|/[U]sers/|[l]arksuite\\.c
 使用者拉取 Git 后，初学者只需要先配置 AI API：
 
 ```bash
-cp .codebuddy/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
+cp workflow/docs/ai-product-workflow-sharing/config/ai-api.env.example .env.local
 ```
 
 先改：

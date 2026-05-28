@@ -24,7 +24,7 @@
 | 「写个止盈止损的 PRD」  | 单点模式 | web3-product-expert-trigger   |
 | 「设计强平逻辑」       | 单点模式 | web3-product-expert-trigger   |
 
-命中团队触发时：加载本 Skill，并视需要同时加载 [SKILL-COLLABORATION-GUIDE.md](.codebuddy/skills/product/SKILL-COLLABORATION-GUIDE.md) 与 [web3-product-expert.md](.codebuddy/skills/product/web3-product-expert.md)。
+命中团队触发时：加载本 Skill，并视需要同时加载 [SKILL-COLLABORATION-GUIDE.md](workflow/skills/product/SKILL-COLLABORATION-GUIDE.md) 与 [web3-product-expert.md](workflow/skills/product/web3-product-expert.md)。
 
 ---
 
@@ -53,7 +53,7 @@
 
 ## 🔀 团队级工作流（流水线）定义
 
-**单一事实源**：流水线步骤、触发词、产出路径**以 [pipelines.yaml](.codebuddy/skills/product/pipelines.yaml) 为准**；本文件仅保留总览与执行逻辑说明，不重复维护与 YAML 相同的内容。Agent 加载本 Skill 时应优先读取 pipelines.yaml（若存在）。
+**单一事实源**：流水线步骤、触发词、产出路径**以 [pipelines.yaml](workflow/skills/product/pipelines.yaml) 为准**；本文件仅保留总览与执行逻辑说明，不重复维护与 YAML 相同的内容。Agent 加载本 Skill 时应优先读取 pipelines.yaml（若存在）。
 
 ### 流水线总览
 
@@ -87,7 +87,7 @@ gstack 的 `/office-hours`、`/autoplan`、`/qa`、`/ship` 等命令不直接照
 
 1. **选择流水线或 ad-hoc**：根据触发关键词与意图匹配上表流水线；若仍处于想法阶段，优先 `feature-discovery`；若已有 PRD/方案且准备进入设计、开发或原型实现，优先 `plan-review-gauntlet`；若无匹配则按「非标协同」处理。
 2. **命名流水线**：若存在对应 workflow-orchestrator 模板，则调用 orchestrator 执行该模板并传入参数（如功能名、是否多语言、是否含测试）；若暂无模板，则按本 Skill 中该流水线的步骤与角色描述，**按步骤依次加载对应职能 Skill** 执行（先 web3-product-expert，再 doc-writer / perpetual-designer / cex-contract-testing-expert 等），不重复实现步骤逻辑。
-3. **非标协同**：按 [SKILL-COLLABORATION-GUIDE](.codebuddy/skills/product/SKILL-COLLABORATION-GUIDE.md) 的串行/并行/条件协作，由 web3-product-expert 主导，调用相应职能 Skill。
+3. **非标协同**：按 [SKILL-COLLABORATION-GUIDE](workflow/skills/product/SKILL-COLLABORATION-GUIDE.md) 的串行/并行/条件协作，由 web3-product-expert 主导，调用相应职能 Skill。
 4. **Lark 协同发布（可选）**：若用户要求将本地 PRD/方案同步到 Lark，执行 hybrid 流程：先匹配候选文档并确认，再执行 create/update。
 5. **交付前**：执行下方「质量门」检查清单。
 
@@ -95,7 +95,7 @@ gstack 的 `/office-hours`、`/autoplan`、`/qa`、`/ship` 等命令不直接照
 
 ## ✅ 质量门（交付前检查清单）
 
-**交互 / 原型 / UX 方案单一事实源**：凡产出含界面、流程、控件状态或体验文案的交付，交付前须完成 [OBE-product-ux-self-check.md](.codebuddy/skills/product/OBE-product-ux-self-check.md) 中与本次范围相关的 **全部 P0** 自检（或由 `web3-product-experience-expert` 主笔并在团队中勾选）；P1/P2 缺口记入 PRD「体验债」或迭代清单。
+**交互 / 原型 / UX 方案单一事实源**：凡产出含界面、流程、控件状态或体验文案的交付，交付前须完成 [OBE-product-ux-self-check.md](workflow/skills/product/OBE-product-ux-self-check.md) 中与本次范围相关的 **全部 P0** 自检（或由 `web3-product-experience-expert` 主笔并在团队中勾选）；P1/P2 缺口记入 PRD「体验债」或迭代清单。
 
 **视觉 Token / 组件约束**：凡产出 **Figma 提示词、交互原型、PRD 内嵌线框说明** 或与设计稿对齐的验收条目，须引用 **`产品设计/设计提示词/OBE DESIGN.md`**（及 `产品设计/需求文档（PRD）/00-规范与模板/OBE-设计规范与Figma关键页面索引.md` 中的 `fileKey` / `node-id`）；与 Figma Variables 冲突时以 Variables 为准。
 
@@ -106,7 +106,7 @@ gstack 的 `/office-hours`、`/autoplan`、`/qa`、`/ship` 等命令不直接照
 - [ ] **协作说明**：产出中注明主导/协作 Skill、协作类型、输入输出（符合 SKILL-COLLABORATION-GUIDE）
 - [ ] **合约相关**：若涉及强平/保证金/资金费等，公式与 Notion 或 PRD 一致，并可追溯来源
 - [ ] **AI 功能**：若涉及 AI，PRD 或设计文档含能力边界、Fallback、人工复核（与 ai-function-designer 对齐）
-- [ ] **体验自查（P0）**：已按 [OBE-product-ux-self-check.md](.codebuddy/skills/product/OBE-product-ux-self-check.md) 完成本节所列范围内的 P0（含 **§8 Web3 CEX 附加** 与资金路径相关交互）
+- [ ] **体验自查（P0）**：已按 [OBE-product-ux-self-check.md](workflow/skills/product/OBE-product-ux-self-check.md) 完成本节所列范围内的 P0（含 **§8 Web3 CEX 附加** 与资金路径相关交互）
 - [ ] **路径与命名**：产出文件路径与命名符合 SKILL-COLLABORATION-GUIDE 第 6.3 节
 - [ ] **Lark 同步（可选）**：若启用 Lark 发布，已完成 preview→确认→apply，且输出 `doc_url/doc_id/sync_mode/sync_status`
 - [ ] **图解（可选）**：若交付含 Excalidraw 图解，已按 `excalidraw-diagram` Skill 完成 **Render & Validate**（PNG 自检）、文件路径在 `产品设计/需求文档（PRD）/03-原型与设计资产/diagrams/` 或协作说明中可追溯
@@ -157,12 +157,12 @@ gstack 的 `/office-hours`、`/autoplan`、`/qa`、`/ship` 等命令不直接照
 
 ## 📎 参考
 
-- **UX / 原型自查清单（单一事实源）**：[OBE-product-ux-self-check.md](.codebuddy/skills/product/OBE-product-ux-self-check.md)
-- **流水线配置**：[pipelines.yaml](.codebuddy/skills/product/pipelines.yaml)（流水线定义可在此修改，无需改本文件）
-- 协作规范：[SKILL-COLLABORATION-GUIDE.md](.codebuddy/skills/product/SKILL-COLLABORATION-GUIDE.md)
-- 主导 Skill：[web3-product-expert.md](.codebuddy/skills/product/web3-product-expert.md)
-- 工作流编排：[workflow-orchestrator.md](.codebuddy/skills/general/workflow-orchestrator.md)（general 目录）
-- 产品 Skill 分析：[product-skills-analysis-report.md](.codebuddy/skills/product/product-skills-analysis-report.md)
+- **UX / 原型自查清单（单一事实源）**：[OBE-product-ux-self-check.md](workflow/skills/product/OBE-product-ux-self-check.md)
+- **流水线配置**：[pipelines.yaml](workflow/skills/product/pipelines.yaml)（流水线定义可在此修改，无需改本文件）
+- 协作规范：[SKILL-COLLABORATION-GUIDE.md](workflow/skills/product/SKILL-COLLABORATION-GUIDE.md)
+- 主导 Skill：[web3-product-expert.md](workflow/skills/product/web3-product-expert.md)
+- 工作流编排：[workflow-orchestrator.md](workflow/skills/general/workflow-orchestrator.md)（general 目录）
+- 产品 Skill 分析：[product-skills-analysis-report.md](workflow/skills/product/product-skills-analysis-report.md)
 - **图标**：线框默认 [Feather](https://github.com/feathericons/feather) · [feathericons.com](https://feathericons.com)（**§1.1b**）；补充 [iconfont](https://www.iconfont.cn/) 中文检索与 SVG（**§1.1c**，见 web3-product-expert）
 
 ---
