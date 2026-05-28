@@ -1,0 +1,26 @@
+# Codex local MCP / Skill integration example for OBE AI product workflow.
+# Copy selected sections into ~/.codex/config.toml.
+# Keep secrets in environment variables. Never commit real tokens.
+
+[features]
+rmcp_client = true
+
+[mcp_servers.notion]
+url = "https://mcp.notion.com/mcp"
+
+[mcp_servers.figma]
+url = "https://mcp.figma.com/mcp"
+bearer_token_env_var = "FIGMA_OAUTH_TOKEN"
+http_headers = { "X-Figma-Region" = "us-east-1" }
+
+# Optional local Figma developer MCP.
+# [mcp_servers.figma-developer]
+# command = "npx"
+# args = ["-y", "figma-developer-mcp"]
+# env = { FIGMA_API_KEY = "$FIGMA_API_KEY" }
+
+# Optional Lark MCP server. Requires local env vars.
+# [mcp_servers.lark-mcp]
+# command = "node"
+# args = ["./tools/lark-mcp-server/dist/index.js"]
+# env = { LARK_APP_ID = "$LARK_APP_ID", LARK_APP_SECRET = "$LARK_APP_SECRET", LARK_WRITE_DRY_RUN = "true" }

@@ -1,0 +1,37 @@
+# Default-ignore the existing workspace. This repository is used to distribute
+# the OBE AI product workflow package and a minimal skill subset.
+*
+
+!.gitignore
+!.codebuddy/
+!.codebuddy/docs/
+!.codebuddy/docs/ai-product-workflow-sharing/
+!.codebuddy/docs/ai-product-workflow-sharing/**
+!.codebuddy/skills/
+!.codebuddy/skills/product/
+!.codebuddy/skills/product/README.md
+!.codebuddy/skills/product/web3-cex-product-team.md
+!.codebuddy/skills/product/pipelines.yaml
+!.codebuddy/skills/product/engineering-plan-review.md
+!.codebuddy/skills/product/web3-prd-figma-prompt.md
+!.codebuddy/skills/product/product-test-qa.md
+!.codebuddy/skills/product/web3-product-expert.md
+!.codebuddy/skills/product/doc-writer.md
+!.codebuddy/skills/product/market-researcher.md
+!.codebuddy/skills/product/data-analyst.md
+!.codebuddy/skills/product/cex-contract-testing-expert.md
+!.codebuddy/skills/product/ai-function-designer.md
+!.codebuddy/skills/product/OBE-product-ux-self-check.md
+!.codebuddy/skills/product/OBE-design-reference-playbook.md
+!.codebuddy/skills/product/web3-product-experience-expert/
+!.codebuddy/skills/product/web3-product-experience-expert/**
+!scripts/
+!scripts/sync-codebuddy-skills-to-cursor.sh
+!scripts/sync-codebuddy-skills-to-codex.sh
+
+.DS_Store
+**/.DS_Store
+.env
+.env.*
+!.codebuddy/docs/ai-product-workflow-sharing/config/*.example
+!.codebuddy/docs/ai-product-workflow-sharing/config/*.example.toml

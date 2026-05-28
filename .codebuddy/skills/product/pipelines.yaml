@@ -1,0 +1,430 @@
+# Web3 CEX 产品团队 - 流水线定义（可配置）
+# 供 web3-cex-product-team 与 workflow-orchestrator 引用；修改此处即可更新流水线步骤与产出路径，无需改 Skill 正文。
+# 路径：.codebuddy/skills/product/pipelines.yaml
+# 可选图解产出（不写入各流水线必填 output_paths，避免破坏解析）：Excalidraw 资产可落盘至
+#   产品设计/需求文档（PRD）/03-原型与设计资产/diagrams/
+# 协作 Skill：excalidraw-diagram（见 web3-product-expert 1.6 节与 SKILL-COLLABORATION-GUIDE）。
+#
+# 交互 / 原型体验自查单一事实源路径（供流水线步骤与质量门显式引用）：
+#   .codebuddy/skills/product/OBE-product-ux-self-check.md
+# OBE 视觉规范快照（配色 / 字体 / 按钮 / OTP / 图标入口 + Quick Start）：
+#   产品设计/设计提示词/OBE DESIGN.md
+
+version: "1.3"
+team_skill: "web3-cex-product-team"
+
+pipelines:
+  - id: feature-discovery
+    name: "需求澄清与立项判断"
+    trigger_keywords:
+      - "需求澄清"
+      - "立项判断"
+      - "值不值得做"
+      - "产品想法评审"
+      - "业务价值评审"
+      - "为什么现在做"
+    input_requirements:
+      - "产品想法或问题描述"
+      - "目标用户或业务场景"
+      - "可选：现有替代方案、竞品、数据线索"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "若澄清内容已经涉及页面、流程、控件、交易风险展示或体验文案，输出中的体验风险与后续 PRD 验收边界须能映射到相关 P0；若仍处于纯立项判断阶段，可记录为后续 PRD 进入评审前必查。"
+    steps:
+      - role: "需求澄清"
+        skill: "web3-product-expert"
+        action: "明确问题、用户、痛点、现有替代方案、非目标、成功/失败标准"
+      - role: "研究增强（可选）"
+        skill: "market-researcher"
+        action: "竞品、帮助中心、行业实践快扫，补充外部事实与可借鉴路径"
+        optional: true
+      - role: "指标判断（可选）"
+        skill: "data-analyst"
+        action: "定义业务指标、用户行为指标、风险指标与最小可验证信号"
+        optional: true
+      - role: "体验风险"
+        skill: "web3-product-experience-expert"
+        action: "识别关键用户路径、误解风险、异常态、空态与高风险确认点"
+        optional: true
+      - role: "立项结论"
+        skill: "web3-product-expert"
+        action: "输出做/不做/延后/缩小范围的判断，并给出下一步进入 PRD 或方案评审的条件"
+    output_paths:
+      discovery: "产品设计/需求文档（PRD）/00-规范与模板/OBE-{feature_name}-需求澄清与立项判断.md"
+    quality_gates:
+      - "必须写清最终判断：do / do_not_do / defer / narrow_scope"
+      - "必须写清目标用户、业务目标、非目标、成功指标、失败条件、关键风险、下一步入口"
+      - "如涉及界面、流程、控件或交易风险展示，必须标记后续需要闭环的 OBE-product-ux-self-check P0 范围"
+    evidence_fields:
+      - "owner_skill"
+      - "decision"
+      - "evidence_path"
+      - "success_metrics"
+      - "non_goals"
+      - "blocking_questions"
+      - "next_pipeline"
+    orchestrator_template: null
+
+  - id: plan-review-gauntlet
+    name: "产品/设计/工程/测试联合评审"
+    trigger_keywords:
+      - "联合评审"
+      - "方案评审"
+      - "开发前评审"
+      - "进入开发前评审"
+      - "自动评审"
+      - "计划评审"
+      - "plan review"
+    input_requirements:
+      - "PRD、方案或原型计划路径"
+      - "功能名称"
+      - "目标端与影响范围"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "凡方案含界面、流程、交互、控件状态、体验文案或交易风险展示，联合评审必须核对相关 P0 的闭环状态；涉及合约交易或风险展示时 §8 为必经。"
+      - document: "产品设计/设计提示词/OBE DESIGN.md"
+        requirement: "涉及视觉、Figma 提示词、交互原型或实现验收时，须核对 OBE 视觉基线；与 Figma Variables 冲突时以 Variables 为准。"
+    steps:
+      - role: "产品战略评审"
+        skill: "product-lens-reviewer"
+        action: "检查业务价值、范围取舍、优先级、是否值得现在做；若该 Skill 不可用，由 web3-product-expert 代执行并在协作说明中标记 fallback"
+        optional: true
+      - role: "体验设计评审"
+        skill: "web3-product-experience-expert"
+        action: "评审用户路径、状态完整性、误导风险、交易风险提示、OBE P0 覆盖"
+      - role: "工程计划评审"
+        skill: "engineering-plan-review"
+        action: "评审架构边界、接口/数据流、状态机、权限安全、依赖、灰度、回滚、监控与测试策略；若材料不足，输出工程待确认问题"
+      - role: "测试与验收评审"
+        skill: "product-test-qa"
+        action: "评审可测性、UAT、回归范围、阻断问题与验收证据"
+      - role: "合约专项测试评审"
+        skill: "cex-contract-testing-expert"
+        action: "涉及永续合约、保证金、强平、资金费、风险档位时，补充规则断言和资损风险评审"
+        optional: true
+        condition: "futures_or_fund_risk_related"
+      - role: "整合裁决"
+        skill: "web3-product-expert"
+        action: "汇总 pass / conditional_pass / fail，列出阻断项、负责人、证据路径与下一步"
+    output_paths:
+      review: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/reports/OBE-{feature_name}-联合评审报告.md"
+    quality_gates:
+      - "必须给出 pass / conditional_pass / fail 结论"
+      - "必须列出每个评审维度的 owner_skill、evidence_path、blocking_issues、required_next_action"
+      - "若方案涉及用户可见体验，OBE-product-ux-self-check 相关 P0 必须有满足/缺口/不适用结论"
+      - "conditional_pass 必须写清允许进入下一阶段的范围和不可越界项"
+    evidence_fields:
+      - "owner_skill"
+      - "review_dimension"
+      - "result"
+      - "evidence_path"
+      - "blocking_issues"
+      - "required_next_action"
+      - "allowed_next_pipeline"
+    orchestrator_template: null
+
+  - id: prd-full
+    name: "新功能从 0 到 PRD+测试+设计对接"
+    trigger_keywords:
+      - "全流程"
+      - "从 0 到 1"
+      - "PRD+测试+设计"
+      - "完整 PRD 交付"
+    input_requirements:
+      - "功能名称"
+      - "核心需求"
+      - "目标用户"
+      - "可选竞品参考"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "产品方案 / PRD 进入评审门或设计对接（Figma 提示词）前必须引用该清单：凡 PRD 含界面、流程、控件、交互或体验文案，或与端上展示相关（含关键数值、状态、加载与异常），须完成与本功能相关的全部 P0；涉及合约交易或风险展示时 §8 为必经；检查 ID 结论写入 PRD「体验验收」或附录。"
+      - document: "产品设计/设计提示词/OBE DESIGN.md"
+        requirement: "设计对接（web3-prd-figma-prompt）产出前须对齐本文档中的 Token / 按钮阶梯 / 组件入口；与 Figma Variables 不一致时以 Variables 为准并可在修订记录中注明。"
+    steps:
+      - role: "研究增强（外部事实快扫）"
+        skill: "parallel"
+        action: "竞品/政策/帮助中心快速检索与摘要"
+        optional: true
+      - role: "产品负责人/架构师"
+        skill: "web3-product-expert"
+        action: "需求与方案"
+      - role: "文档工程师"
+        skill: "doc-writer"
+        action: "PRD；定稿前必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 完成上文 mandatory_references 所述 P0 并在 PRD 中可追溯"
+      - role: "评审门（战略一致性）"
+        skill: "product-lens-reviewer"
+        action: "PRD 战略一致性评审；若 PRD 含体验相关章节，评审须对照 OBE-product-ux-self-check 已闭环的 P0 结论"
+        optional: true
+      - role: "评审门（高风险对抗）"
+        skill: "adversarial-document-reviewer"
+        action: "复杂/高风险需求对抗评审；体验与误导风险项须与 .codebuddy/skills/product/OBE-product-ux-self-check.md P0 交叉核验"
+        optional: true
+        condition: "high_risk_or_high_complexity"
+      - role: "测试与验收"
+        skill: "product-test-qa"
+        action: "测试用例；验收条目须覆盖 PRD 中已声明的 OBE 自查 P0（尤其是 §8 若适用）"
+      - role: "设计对接"
+        skill: "web3-prd-figma-prompt"
+        action: "Figma 提示词；须基于已完成 OBE-product-ux-self-check P0 的 PRD，并引用 OBE DESIGN.md 对齐配色/字体/按钮等视觉约束，避免提示词与已定体验门禁矛盾"
+      - role: "知识库"
+        skill: "notion-manager"
+        action: "Notion 保存"
+        optional: true
+      - role: "治理增强（MCP 安全与审计）"
+        skill: "runlayer"
+        action: "执行 MCP 治理基线检查并记录审计轨迹"
+        optional: true
+        enabled_by_default: false
+      - role: "协同发布"
+        skill: "lark-prd-sync"
+        action: "Lark 文档同步（hybrid：先匹配确认，再 create/update）"
+        optional: true
+    output_paths:
+      prd: "产品设计/需求文档（PRD）/OBE-{feature_name}-产品需求文档.md"
+      test: "产品设计/测试用例/OBE-{feature_name}-测试用例与验收标准.md"
+      figma: "产品设计/设计提示词/OBE-{feature_name}-Figma设计提示词.md"
+      lark_sync_log: "产品设计/需求文档（PRD）/sync/OBE-{feature_name}-Lark同步记录.md"
+    quality_gates:
+      - "必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md：PRD 含界面/流程/交互/端上展示或合约风险展示时，相关 P0（含 §8）已闭环并有检查 ID 记录"
+    orchestrator_template: "web3-prd-with-translation"
+
+  - id: prd-and-qa
+    name: "PRD + 测试用例与验收标准"
+    trigger_keywords:
+      - "PRD加测试"
+      - "PRD+验收"
+      - "需求文档和测试用例"
+      - "PRD 加测试"
+    input_requirements:
+      - "功能名称"
+      - "核心需求"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "PRD 定稿或进入评审门前必须引用该清单：凡 PRD 含界面、流程、控件、交互或体验文案，或与端上展示相关，须完成与本功能相关的全部 P0；涉及合约交易或风险展示时 §8 为必经；结论写入 PRD「体验验收」或附录。"
+    steps:
+      - role: "研究增强（外部事实快扫）"
+        skill: "parallel"
+        action: "竞品/政策/帮助中心快速检索与摘要"
+        optional: true
+      - role: "产品负责人/架构师"
+        skill: "web3-product-expert"
+        action: "功能设计"
+      - role: "文档工程师"
+        skill: "doc-writer"
+        action: "PRD；定稿前必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 完成 mandatory_references 所述 P0 并在 PRD 中可追溯"
+      - role: "评审门（战略一致性）"
+        skill: "product-lens-reviewer"
+        action: "PRD 战略一致性评审；若含体验相关章节，须对照 OBE-product-ux-self-check 已闭环的 P0"
+        optional: true
+      - role: "评审门（高风险对抗）"
+        skill: "adversarial-document-reviewer"
+        action: "复杂/高风险需求对抗评审；体验与误导风险与 OBE-product-ux-self-check P0 交叉核验"
+        optional: true
+        condition: "high_risk_or_high_complexity"
+      - role: "测试与验收"
+        skill: "product-test-qa"
+        action: "测试用例与验收标准；须覆盖 PRD 已声明的 OBE 自查 P0（§8 若适用）"
+      - role: "治理增强（MCP 安全与审计）"
+        skill: "runlayer"
+        action: "执行 MCP 治理基线检查并记录审计轨迹"
+        optional: true
+        enabled_by_default: false
+      - role: "协同发布"
+        skill: "lark-prd-sync"
+        action: "Lark 文档同步（hybrid：先匹配确认，再 create/update）"
+        optional: true
+    output_paths:
+      prd: "产品设计/需求文档（PRD）/OBE-{feature_name}-产品需求文档.md"
+      test: "产品设计/测试用例/OBE-{feature_name}-测试用例与验收标准.md"
+      lark_sync_log: "产品设计/需求文档（PRD）/sync/OBE-{feature_name}-Lark同步记录.md"
+    quality_gates:
+      - "必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md：PRD 含界面/流程/交互/端上展示或合约风险展示时，相关 P0（含 §8）已闭环并有检查 ID 记录"
+    orchestrator_template: "prd-and-qa"
+
+  - id: futures-feature
+    name: "合约专项（强平/保证金/资金费等）"
+    trigger_keywords:
+      - "合约功能"
+      - "永续合约"
+      - "强平"
+      - "保证金"
+      - "资金费"
+      - "ADL"
+      - "风险档位"
+      - "合约专项"
+    input_requirements:
+      - "功能/规则范围（如强平逻辑、保证金模型）"
+      - "可选 Notion 规则页"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "PRD 定稿或进入评审门前必须引用该清单：凡 PRD 涉及用户可见的规则解释、数值展示、状态与风险提示、流程与交互，须完成与本功能相关的全部 P0；合约专项默认 **§8 Web3 CEX / 永续附加** 全条 P0 为必经（除非书面声明纯后端/清结算无 UI 影响并在 PRD 中注明不适用项）。"
+    steps:
+      - role: "研究增强（外部事实快扫）"
+        skill: "parallel"
+        action: "竞品规则与帮助中心快速检索"
+        optional: true
+      - role: "产品负责人/架构师 + 永续合约专家"
+        skill: "web3-product-expert"
+        collaboration: "perpetual-designer"
+        action: "产品架构与永续合约设计；若存在端上展示或用户路径，方案说明须可被 OBE-product-ux-self-check §8 映射为可测条目"
+      - role: "文档工程师"
+        skill: "doc-writer"
+        action: "PRD；定稿前必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 完成 mandatory_references 所述 P0（§8 默认必经除非已声明不适用）并在 PRD 中可追溯"
+      - role: "评审门（战略一致性）"
+        skill: "product-lens-reviewer"
+        action: "PRD 战略一致性评审；须核对 §8 与风险展示相关 P0 已闭环"
+        optional: true
+      - role: "评审门（高风险对抗）"
+        skill: "adversarial-document-reviewer"
+        action: "复杂/高风险需求对抗评审；资损与误导场景须与 OBE-product-ux-self-check §8 交叉核验"
+        optional: true
+        condition: "high_risk_or_high_complexity"
+      - role: "测试与验收"
+        skill: "cex-contract-testing-expert"
+        action: "测试用例（含公式断言）与可测性评估；须覆盖 PRD 已声明的 OBE §8 及相关 P0 的体验与展示断言（与规则断言一并可追溯）"
+      - role: "治理增强（MCP 安全与审计）"
+        skill: "runlayer"
+        action: "执行 MCP 治理基线检查并记录审计轨迹"
+        optional: true
+        enabled_by_default: false
+    output_paths:
+      prd: "产品设计/需求文档（PRD）/OBE-{feature_name}-产品需求文档.md"
+      test: "产品设计/测试用例/OBE-{feature_name}-测试用例与验收标准.md"
+    quality_gates:
+      - "必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md：默认完成 §8 全 P0；若声明无 UI 影响，须在 PRD 列明不适用项并经评审确认"
+    orchestrator_template: "futures-feature"
+
+  - id: ai-feature
+    name: "AI 功能（智能客服/推荐/风控模型等）"
+    trigger_keywords:
+      - "AI功能"
+      - "智能客服"
+      - "推荐"
+      - "风控模型"
+      - "异常识别"
+      - "AI 产品设计"
+    input_requirements:
+      - "AI 功能类型"
+      - "业务目标"
+      - "边界预期"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "PRD 定稿前必须引用该清单：凡含用户可见交互（会话、表单、设置、披露、错误与加载态）或端上展示，须完成与本功能相关的全部 P0；若 AI 输出可能影响交易决策、仓位认知或风险判断，§8 中与展示、延迟提示、不可逆确认相关的 P0 为必经。"
+    steps:
+      - role: "产品负责人/架构师 + AI 功能设计"
+        skill: "web3-product-expert"
+        collaboration: "ai-function-designer"
+        action: "能力边界、Fallback、复核；用户路径与披露设计须可被映射至 OBE-product-ux-self-check 对应 P0"
+      - role: "文档工程师"
+        skill: "doc-writer"
+        action: "PRD（含 AI 章节）；定稿前必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 完成 mandatory_references 所述 P0 并在 PRD 中可追溯"
+    output_paths:
+      prd: "产品设计/需求文档（PRD）/OBE-{feature_name}-产品需求文档.md"
+      ai_doc: "产品设计/AI功能/OBE-{feature_name}-AI功能设计文档.md"
+    quality_gates:
+      - "必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md：含界面/交互/披露或影响交易认知时，相关 P0（必要时含 §8 子集）已闭环并有检查 ID 记录"
+    orchestrator_template: "ai-feature"
+
+  - id: ux-audit
+    name: "现有功能 UX 评审"
+    trigger_keywords:
+      - "UX评审"
+      - "交互优化"
+      - "体验审计"
+      - "竞品 UX 对比"
+    input_requirements:
+      - "功能或页面范围"
+      - "可选竞品列表"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "UX 评审交付必须引用该清单：完成与评审范围相关的全部 P0 自检（含 §8 Web3 CEX / 永续附加，若涉及交易、仓位、保证金或价格展示）；交付中列出检查 ID 与结论（满足/缺口/不适用）。"
+      - document: "产品设计/设计提示词/OBE DESIGN.md"
+        requirement: "若评审涉及视觉层级、对比度、组件选用或与设计稿一致性，须对照本文档中的 Token / 按钮规范摘要（最终以 Figma Variables 为准）。"
+    steps:
+      - role: "产品负责人/架构师"
+        skill: "web3-product-expert"
+        action: "上下文；若产出含界面/流程/控件或体验文案的补充审核，须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 做 P0 抽检并对照 PRD/规则一致性"
+      - role: "体验设计"
+        skill: "web3-product-experience-expert"
+        action: "竞品 UX + 改进建议；必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 完成与本范围相关的 P0，并在交互设计方案中写明检查 ID 结论；涉及界面规格时对照 OBE DESIGN.md"
+    parallel: true
+    quality_gates:
+      - "必须引用并完成 .codebuddy/skills/product/OBE-product-ux-self-check.md 中与本次评审范围相关的全部 P0（§8 在涉及时为必经）"
+    output_paths:
+      ux: "产品设计/设计文档/OBE-{feature_name}-交互设计方案.md"
+    orchestrator_template: null  # 可不走 orchestrator
+
+  - id: prototype-full
+    name: "产品原型全流程（设计→测试→修订→发布→Figma）"
+    trigger_keywords:
+      - "产品原型工作流"
+      - "原型全流程"
+      - "原型开发并发布"
+      - "自动化测试走查后发布"
+      - "发布到 Vercel 并上传 Figma"
+    input_requirements:
+      - "功能名称（feature_name）"
+      - "需求文档路径（prd_path）"
+      - "目标端（Web/H5/App）"
+      - "本地项目路径（local_project_path）"
+      - "Figma 目标文件（fileKey 或 URL）"
+      - "Figma 上传文件夹路径（需用户确认）"
+    mandatory_references:
+      - document: ".codebuddy/skills/product/OBE-product-ux-self-check.md"
+        requirement: "凡涉及产品方案 / 原型方案的审核与定稿（含初版方案与测试后修订），必须引用该清单：完成与本功能相关的全部 P0（含 §8，若涉及合约交易界面）；缺口写入 revision_log 或 PRD 体验债并闭环后再发布。"
+      - document: "产品设计/设计提示词/OBE DESIGN.md"
+        requirement: "原型实现与发布前须对齐本文档中的 Token、按钮尺寸阶梯与图表色约定（并与 chartColors 等代码常量交叉校验）；与 Figma 冲突以 Figma Variables 为准。"
+    steps:
+      - role: "产品负责人/架构师"
+        skill: "web3-product-expert"
+        action: "阅读需求文档、参考实现并完成 Web/H5/App 原型方案与执行；方案定稿前引用 OBE DESIGN.md 对齐视觉基线，且必须引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 完成相关 P0 并在 impl_plan 或同级产出中记录检查 ID 结论"
+      - role: "测试与验收（规则）"
+        skill: "cex-contract-testing-expert"
+        action: "生成自动化测试用例并执行，输出规则测试报告"
+      - role: "体验测试（UX）"
+        skill: "ux-walkthrough-automation"
+        action: "生成 UI/UX 走查脚本并执行，输出 UX 测试报告"
+      - role: "方案修订"
+        skill: "web3-product-expert"
+        action: "基于测试报告修订当前产品方案并回归确认；修订后的方案必须再次引用 .codebuddy/skills/product/OBE-product-ux-self-check.md 复核相关 P0（含 §8，若适用），并在 revision_log 中更新结论"
+      - role: "设计一致性评审"
+        skill: "design-implementation-reviewer"
+        action: "对比 Figma 与实现偏差并输出修复清单"
+        optional: true
+      - role: "Figma 同步收敛"
+        skill: "figma-design-sync"
+        action: "基于偏差清单进行设计同步收敛"
+        optional: true
+        condition: "has_figma_file_and_deviation_list"
+      - role: "发布"
+        skill: "web3-product-expert"
+        action: "通过 Vercel MCP 发布；若无映射则首次发布并回填映射"
+      - role: "凭据检查"
+        skill: "1password"
+        action: "发布前凭据完整性检查（Token/Secret/权限）"
+        optional: true
+      - role: "治理增强（MCP 安全与审计）"
+        skill: "runlayer"
+        action: "发布前 MCP 治理检查并记录审计轨迹"
+        optional: true
+        enabled_by_default: false
+      - role: "设计资产同步"
+        skill: "web3-product-expert"
+        action: "通过 Figma MCP 上传相关组件（上传前强制确认文件夹路径）"
+    quality_gates:
+      - "必须引用并完成 .codebuddy/skills/product/OBE-product-ux-self-check.md：初版原型方案与「方案修订」后各至少一轮与本功能相关的 P0 闭环（§8 在涉及时为必经），并在 impl_plan / revision_log 可追溯"
+      - "P0 缺陷数 = 0"
+      - "关键交易流程通过率 = 100%"
+      - "UX 走查核心项通过率满足项目阈值"
+      - "设计一致性评审结论 != fail（启用 design gate 时）"
+      - "Figma 上传前已获得路径确认"
+    output_paths:
+      workflow_template: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/prototype-workflow-template.md"
+      vercel_map: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/vercel-project-map.yaml"
+      impl_plan: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/instances/OBE-{feature_name}-prototype-execution.md"
+      rule_test_report: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/reports/OBE-{feature_name}-rule-test-report.md"
+      ux_test_report: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/reports/OBE-{feature_name}-ux-test-report.md"
+      revision_log: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/reports/OBE-{feature_name}-revision-log.md"
+      release_note: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/reports/OBE-{feature_name}-release-note.md"
+      figma_sync_log: "产品设计/需求文档（PRD）/03-原型与设计资产/workflow/reports/OBE-{feature_name}-figma-sync-log.md"
+    orchestrator_template: "prototype-full"
