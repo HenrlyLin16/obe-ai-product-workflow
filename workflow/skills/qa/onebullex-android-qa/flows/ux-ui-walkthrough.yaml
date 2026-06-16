@@ -1,0 +1,133 @@
+{
+  "name": "ux-ui-walkthrough",
+  "version": 1,
+  "purpose": "screenshot-backed UX/UI review",
+  "steps": [
+    {
+      "name": "ux_initial_screen",
+      "action": "ux_snapshot",
+      "label": "启动/当前首页",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_open_market",
+      "action": "tap",
+      "selector": {
+        "desc": "tab-market",
+        "text": "市场",
+        "fallback": [
+          405,
+          2480
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "ux_market_page",
+      "action": "ux_snapshot",
+      "label": "市场页",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_market_symbol_sort",
+      "action": "tap",
+      "selector": {
+        "desc": "market-sort-symbol",
+        "text_regex": "币种|名称|Symbol",
+        "fallback": [
+          75,
+          585
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "ux_market_sorted",
+      "action": "ux_snapshot",
+      "label": "市场排序后",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_open_assets",
+      "action": "tap",
+      "selector": {
+        "desc": "tab-assets",
+        "text": "资产",
+        "fallback": [
+          990,
+          2480
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "ux_open_assets_overview",
+      "action": "tap",
+      "selector": {
+        "desc": "asset-tab-overview",
+        "text": "总览",
+        "fallback": [
+          114,
+          180
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "ux_assets_overview",
+      "action": "ux_snapshot",
+      "label": "资产总览",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_open_spot_assets",
+      "action": "tap",
+      "selector": {
+        "desc": "asset-tab-spot",
+        "text": "现货",
+        "fallback": [
+          474,
+          180
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "ux_spot_assets",
+      "action": "ux_snapshot",
+      "label": "现货资产",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_open_futures_assets",
+      "action": "tap",
+      "selector": {
+        "desc": "asset-tab-futures",
+        "text": "合约",
+        "fallback": [
+          654,
+          180
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "ux_futures_assets",
+      "action": "ux_snapshot",
+      "label": "合约资产",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    }
+  ]
+}

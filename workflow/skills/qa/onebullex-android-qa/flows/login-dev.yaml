@@ -1,0 +1,12 @@
+{
+  "name": "login-dev",
+  "version": 1,
+  "side_effects": "auth-only",
+  "steps": [
+    {"name": "open_login_entry", "action": "tap", "selector": {"desc": "login-entry", "text_regex": "登录|Log in|Sign in", "fallback": [1000, 180]}, "snapshot": true, "failure_category": "automation_issue"},
+    {"name": "input_username", "action": "input", "env": "OBX_TEST_USERNAME", "selector": {"desc": "login-email-input", "text_regex": "邮箱|Email"}, "failure_category": "environment_blocker"},
+    {"name": "input_password", "action": "input", "env": "OBX_TEST_PASSWORD", "selector": {"desc": "login-password-input", "text_regex": "密码|Password"}, "failure_category": "environment_blocker"},
+    {"name": "submit_login", "action": "tap", "selector": {"desc": "login-submit-button", "text_regex": "登录|Log in|Sign in"}, "snapshot": true, "failure_category": "automation_issue"},
+    {"name": "login_result", "action": "assert_text", "any": ["首页", "市场", "资产", "总览"], "failure_category": "product_bug"}
+  ]
+}

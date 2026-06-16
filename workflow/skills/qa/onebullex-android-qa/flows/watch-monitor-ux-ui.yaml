@@ -1,0 +1,74 @@
+{
+  "name": "watch-monitor-ux-ui",
+  "version": 1,
+  "purpose": "screenshot-backed watch monitor review",
+  "steps": [
+    {
+      "name": "open_home_contract_entry",
+      "action": "tap",
+      "selector": {
+        "text": "合约",
+        "fallback": [600, 2510]
+      },
+      "wait": 1.8,
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "assert_contract_page",
+      "action": "assert_text",
+      "all": ["开仓", "平仓", "K线图"],
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "open_kline_page",
+      "action": "tap",
+      "selector": {
+        "text": "K线图",
+        "fallback": [1002, 212]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_settings_sheet",
+      "action": "tap",
+      "selector": {
+        "desc": "设置",
+        "text": "设置",
+        "fallback": [1133, 682]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_watch_monitor_page",
+      "action": "tap_xy",
+      "coordinate": [600, 2325],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "watch_monitor_page_snapshot",
+      "action": "ux_snapshot",
+      "label": "实时盯盘管理页",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "watch_monitor_float_snapshot",
+      "action": "ux_snapshot",
+      "label": "实时盯盘浮窗展开态",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "watch_monitor_banner_snapshot",
+      "action": "ux_snapshot",
+      "label": "省电提示Banner",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    }
+  ]
+}

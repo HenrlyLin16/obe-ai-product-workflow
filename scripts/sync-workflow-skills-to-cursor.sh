@@ -7,7 +7,7 @@ set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORKFLOW="${ROOT}/workflow/skills"
 CURSOR="${ROOT}/.cursor/skills"
-DOMAINS="general product investment virtual-world"
+DOMAINS="general product qa investment virtual-world"
 
 # 根目录下不视为「可加载技能」的 .md，不同步
 EXCLUDE_MD="README.md product-skills-analysis-report.md product-team-skill-implementation-summary.md SKILL-COLLABORATION-GUIDE.md investment-advisor-core-capabilities.md"

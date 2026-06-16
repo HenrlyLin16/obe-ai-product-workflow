@@ -1,0 +1,144 @@
+{
+  "name": "market-sort",
+  "version": 1,
+  "steps": [
+    {
+      "name": "open_market_tab",
+      "action": "tap",
+      "selector": {
+        "desc": "tab-market",
+        "text": "市场",
+        "fallback": [
+          405,
+          2480
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "market_rows_visible",
+      "action": "assert_sorted",
+      "key": "symbol",
+      "order": "asc",
+      "non_blocking": true,
+      "min_rows": 3,
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "symbol_sort_ascending",
+      "action": "tap",
+      "selector": {
+        "desc": "market-sort-symbol",
+        "text_regex": "币种|名称|Symbol",
+        "fallback": [
+          75,
+          585
+        ]
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_symbol_ascending",
+      "action": "assert_sorted",
+      "key": "symbol",
+      "order": "asc",
+      "min_rows": 3,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "symbol_sort_descending",
+      "action": "tap",
+      "selector": {
+        "desc": "market-sort-symbol",
+        "text_regex": "币种|名称|Symbol",
+        "fallback": [
+          75,
+          585
+        ]
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_symbol_descending",
+      "action": "assert_sorted",
+      "key": "symbol",
+      "order": "desc",
+      "min_rows": 3,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "price_sort_once",
+      "action": "tap",
+      "selector": {
+        "desc": "market-sort-price",
+        "text_regex": "价格|Price",
+        "fallback": [
+          790,
+          585
+        ]
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "observe_price_sort_once",
+      "action": "assert_sorted",
+      "key": "price",
+      "order": "asc",
+      "non_blocking": true,
+      "min_rows": 3,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "change_sort_ascending",
+      "action": "tap",
+      "selector": {
+        "desc": "market-sort-change",
+        "text_regex": "涨跌|Change",
+        "fallback": [
+          1065,
+          585
+        ]
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_change_ascending",
+      "action": "assert_sorted",
+      "key": "change",
+      "order": "asc",
+      "min_rows": 3,
+      "bug_candidate": true,
+      "failure_category": "product_bug",
+      "tolerance": 0.05,
+      "max_inversions": 1
+    },
+    {
+      "name": "change_sort_descending",
+      "action": "tap",
+      "selector": {
+        "desc": "market-sort-change",
+        "text_regex": "涨跌|Change",
+        "fallback": [
+          1065,
+          585
+        ]
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_change_descending",
+      "action": "assert_sorted",
+      "key": "change",
+      "order": "desc",
+      "min_rows": 3,
+      "bug_candidate": true,
+      "failure_category": "product_bug",
+      "tolerance": 0.05,
+      "max_inversions": 1
+    }
+  ]
+}

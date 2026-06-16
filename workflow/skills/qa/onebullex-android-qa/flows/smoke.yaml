@@ -1,0 +1,13 @@
+{
+  "name": "smoke",
+  "version": 1,
+  "steps": [
+    {
+      "name": "initial_screen_responsive",
+      "action": "assert_text",
+      "any": ["首页", "市场", "合约", "现货", "总览", "资金", "总资产价值"],
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    }
+  ]
+}

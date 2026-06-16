@@ -1,0 +1,10 @@
+{
+  "name": "futures-open-position-dry-run",
+  "version": 1,
+  "side_effects": "blocked-by-default",
+  "steps": [
+    {"name": "open_futures_tab", "action": "tap", "selector": {"desc": "tab-futures", "text": "合约", "fallback": [600, 2480]}, "snapshot": true, "failure_category": "automation_issue"},
+    {"name": "choose_open_long", "action": "tap", "selector": {"desc": "futures-open-long-button", "text_regex": "开多|买入|Long"}, "snapshot": true, "failure_category": "automation_issue"},
+    {"name": "stop_before_order_confirm", "action": "safety_gate", "requires_side_effect": true, "failure_category": "environment_blocker"}
+  ]
+}

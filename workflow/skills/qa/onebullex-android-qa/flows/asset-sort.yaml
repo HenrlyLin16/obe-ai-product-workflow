@@ -1,0 +1,12 @@
+{
+  "name": "asset-sort",
+  "version": 1,
+  "steps": [
+    {"name": "open_assets_tab", "action": "tap", "selector": {"desc": "tab-assets", "text_regex": "资产|Assets|总览", "fallback": [990, 2480]}, "snapshot": true, "failure_category": "automation_issue"},
+    {"name": "assert_assets_overview", "action": "assert_assets", "mode": "overview", "snapshot": true, "bug_candidate": true, "failure_category": "product_bug"},
+    {"name": "open_spot_assets", "action": "tap", "selector": {"desc": "asset-tab-spot", "text": "现货", "fallback": [474, 180]}, "failure_category": "automation_issue"},
+    {"name": "assert_spot_assets", "action": "assert_assets", "mode": "spot", "snapshot": true, "bug_candidate": true, "failure_category": "product_bug"},
+    {"name": "open_futures_assets", "action": "tap", "selector": {"desc": "asset-tab-futures", "text": "合约", "fallback": [654, 180]}, "failure_category": "automation_issue"},
+    {"name": "assert_futures_assets", "action": "assert_assets", "mode": "futures", "snapshot": true, "bug_candidate": true, "failure_category": "product_bug"}
+  ]
+}
