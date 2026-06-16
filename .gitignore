@@ -10,6 +10,10 @@
 !workflow/docs/ai-product-workflow-sharing/
 !workflow/docs/ai-product-workflow-sharing/**
 !workflow/skills/
+!workflow/skills/qa/
+!workflow/skills/qa/**
+workflow/skills/qa/**/__pycache__/
+workflow/skills/qa/**/*.pyc
 !workflow/skills/product/
 !workflow/skills/product/README.md
 !workflow/skills/product/web3-cex-product-team.md
@@ -28,6 +32,7 @@
 !workflow/skills/product/web3-product-experience-expert/
 !workflow/skills/product/web3-product-experience-expert/**
 !scripts/
+!scripts/sync-onebullex-android-qa-skill.sh
 !scripts/sync-workflow-skills-to-cursor.sh
 !scripts/sync-workflow-skills-to-codex.sh
 

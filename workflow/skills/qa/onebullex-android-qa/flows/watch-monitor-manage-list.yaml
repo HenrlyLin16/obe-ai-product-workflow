@@ -1,0 +1,121 @@
+{
+  "name": "watch-monitor-manage-list",
+  "version": 1,
+  "steps": [
+    {
+      "name": "open_home_contract_entry",
+      "action": "tap",
+      "selector": {
+        "text": "合约",
+        "fallback": [600, 2510]
+      },
+      "wait": 1.8,
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "assert_contract_page",
+      "action": "assert_text",
+      "all": ["开仓", "平仓", "K线图"],
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "open_kline_page",
+      "action": "tap",
+      "selector": {
+        "text": "K线图",
+        "fallback": [1002, 212]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_settings_sheet",
+      "action": "tap",
+      "selector": {
+        "desc": "设置",
+        "text": "设置",
+        "fallback": [1133, 682]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_watch_monitor_page",
+      "action": "tap_xy",
+      "coordinate": [600, 2325],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "enable_watch_monitor",
+      "action": "tap_xy",
+      "coordinate": [1062, 564],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_add_pair_sheet",
+      "action": "tap_xy",
+      "coordinate": [600, 2450],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_add_pair_sheet",
+      "action": "assert_text",
+      "all": ["合约", "现货", "BTCUSDT 永续"],
+      "snapshot": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "select_first_contract_pair",
+      "action": "tap_xy",
+      "coordinate": [1128, 1188],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "close_add_pair_sheet",
+      "action": "tap_xy",
+      "coordinate": [110, 312],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_single_pair_present",
+      "action": "assert_text",
+      "all": ["BTCUSDT 永续", "置顶", "拖动"],
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "tap_pin_button",
+      "action": "tap",
+      "selector": {
+        "desc": "置顶",
+        "text": "置顶",
+        "fallback": [807, 881]
+      },
+      "snapshot": true,
+      "continue_on_failure": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "tap_remove_button",
+      "action": "tap_xy",
+      "coordinate": [66, 881],
+      "snapshot": true,
+      "continue_on_failure": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "manage_list_after_actions",
+      "action": "ux_snapshot",
+      "label": "watch-monitor-manage-list-after-actions",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    }
+  ]
+}

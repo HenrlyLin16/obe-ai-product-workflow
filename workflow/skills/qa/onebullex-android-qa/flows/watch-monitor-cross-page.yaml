@@ -1,0 +1,91 @@
+{
+  "name": "watch-monitor-cross-page",
+  "version": 1,
+  "steps": [
+    {
+      "name": "open_home_contract_entry",
+      "action": "tap",
+      "selector": {
+        "text": "合约",
+        "fallback": [600, 2510]
+      },
+      "wait": 1.8,
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "assert_contract_page",
+      "action": "assert_text",
+      "all": ["开仓", "平仓", "K线图"],
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "open_kline_page",
+      "action": "tap",
+      "selector": {
+        "text": "K线图",
+        "fallback": [1002, 212]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_settings_sheet",
+      "action": "tap",
+      "selector": {
+        "desc": "设置",
+        "text": "设置",
+        "fallback": [1133, 682]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "open_watch_monitor_page",
+      "action": "tap_xy",
+      "coordinate": [600, 2325],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "cross_page_start",
+      "action": "ux_snapshot",
+      "label": "watch-monitor-before-cross-page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "go_home_keyevent",
+      "action": "keyevent",
+      "keycode": "KEYCODE_HOME",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "home_overlay_checkpoint",
+      "action": "ux_snapshot",
+      "label": "watch-monitor-home-overlay",
+      "snapshot": true,
+      "continue_on_failure": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "reopen_onebullex",
+      "action": "tap",
+      "selector": {
+        "text": "OneBullEx (dev)",
+        "fallback": [456, 1619]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "return_to_app_checkpoint",
+      "action": "ux_snapshot",
+      "label": "watch-monitor-returned-to-app",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    }
+  ]
+}

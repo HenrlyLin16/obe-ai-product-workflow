@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORKFLOW="${ROOT}/workflow/skills"
 DEST="${1:-${HOME}/.codex/skills/onebullex}"
-DOMAINS="general product investment virtual-world"
+DOMAINS="general product qa investment virtual-world"
 EXCLUDE_MD="README.md product-skills-analysis-report.md product-team-skill-implementation-summary.md SKILL-COLLABORATION-GUIDE.md investment-advisor-core-capabilities.md"
 
 if [[ ! -d "$WORKFLOW" ]]; then
