@@ -283,14 +283,34 @@ def dry_run_xml() -> str:
 <node text="市场" content-desc="tab-market" bounds="[372,2523][440,2572]"/>
 <node text="合约" content-desc="tab-futures" bounds="[567,2523][635,2572]"/>
 <node text="现货" content-desc="tab-spot" bounds="[762,2523][830,2572]"/>
+<node text="资产" content-desc="tab-assets" bounds="[957,2523][1025,2572]"/>
+<node text="开仓" bounds="[54,420][174,500]"/>
+<node text="平仓" bounds="[234,420][354,500]"/>
+<node text="K线图" bounds="[930,170][1075,255]"/>
+<node text="最新价格" bounds="[48,510][210,570]"/>
+<node text="更多" bounds="[930,620][1025,690]"/>
+<node text="设置" content-desc="设置" bounds="[1090,640][1176,725]"/>
+<node text="实时盯盘浮窗" bounds="[52,2250][420,2315]"/>
+<node text="开启后可实时查看币种波动趋势" bounds="[52,2320][620,2380]"/>
+<node text="实时盯盘" bounds="[52,260][245,330]"/>
+<node text="添加币对" bounds="[498,2380][702,2460]"/>
+<node text="BTCUSDT 永续" bounds="[72,1120][350,1200]"/>
+<node text="置顶" bounds="[870,1330][970,1390]"/>
+<node text="拖动" bounds="[1010,1330][1110,1390]"/>
 <node text="总览" bounds="[54,140][174,225]"/>
 <node text="资金" bounds="[234,140][354,225]"/>
 <node text="总资产价值" bounds="[48,309][223,369]"/>
+<node text="币种" content-desc="market-sort-symbol" bounds="[10,560][145,620]"/>
+<node text="价格" content-desc="market-sort-price" bounds="[720,560][850,620]"/>
+<node text="涨跌" content-desc="market-sort-change" bounds="[980,560][1130,620]"/>
 <node text="BCH / USDT" bounds="[10,650][250,740]"/>
+<node text="430.12" bounds="[720,650][900,740]"/>
 <node text="5.15%" bounds="[950,650][1130,740]"/>
 <node text="BTC / USDT" bounds="[10,780][250,870]"/>
+<node text="104000.12" bounds="[720,780][900,870]"/>
 <node text="0.59%" bounds="[950,780][1130,870]"/>
 <node text="DOGE / USDT" bounds="[10,910][250,1000]"/>
+<node text="0.18" bounds="[720,910][900,1000]"/>
 <node text="-1.48%" bounds="[950,910][1130,1000]"/>
 <node text="账户余额" bounds="[48,1106][212,1166]"/>
 <node text="持仓保证金" bounds="[600,1106][805,1166]"/>

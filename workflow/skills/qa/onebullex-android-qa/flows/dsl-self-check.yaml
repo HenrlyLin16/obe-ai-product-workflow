@@ -1,0 +1,68 @@
+{
+  "name": "dsl-self-check",
+  "version": 1,
+  "inputs": {
+    "expected_entry": {
+      "default": "实时盯盘浮窗"
+    }
+  },
+  "steps": [
+    {
+      "name": "log_input",
+      "log": "Checking DSL support for {{ inputs.expected_entry }}"
+    },
+    {
+      "name": "open_futures_with_route_shorthand",
+      "tap": "watch_monitor.bottom_tab_futures",
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "dismiss_optional_prompt",
+      "dismiss_if_present": {
+        "text": "知道了",
+        "timeout": 0.1
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "branch_on_watch_monitor_state",
+      "branch": {
+        "timeout": 0.1,
+        "cases": [
+          {
+            "name": "watch_monitor_page",
+            "match": {
+              "text": "实时盯盘"
+            },
+            "then": [
+              {
+                "log": "Watch monitor page-like text is visible."
+              },
+              {
+                "screenshot": "dsl-branch-watch-monitor"
+              }
+            ]
+          }
+        ]
+      },
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_templated_text",
+      "action": "assert_text",
+      "any": [
+        "{{ inputs.expected_entry }}"
+      ],
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "press_back_sample",
+      "press_back": {
+        "settle": 0.1
+      },
+      "failure_category": "automation_issue"
+    }
+  ]
+}

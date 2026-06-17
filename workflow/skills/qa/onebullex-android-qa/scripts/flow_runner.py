@@ -43,6 +43,7 @@ OPTIMIZATION_CONFIRM_NAME = "qa-skill-optimization-confirm.template.json"
 FLOWS_USED_DIR_NAME = "flows-used"
 SKILL_DIR = SCRIPT_DIR.parent
 FLOWS_DIR = SKILL_DIR / "flows"
+ROUTES_DIR = SKILL_DIR / "routes"
 APK_VERSION_GUARD = SCRIPT_DIR / "apk_version_guard.py"
 
 
@@ -56,8 +57,12 @@ class StepResult:
     bug_candidate: bool = False
     notes: list[str] = field(default_factory=list)
     selector: dict[str, Any] | None = None
+    route: str = ""
+    route_file: str = ""
+    route_stability: str = ""
     evidence: dict[str, str] = field(default_factory=dict)
     fallback: str = ""
+    child_results: list["StepResult"] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -69,8 +74,12 @@ class StepResult:
             "bug_candidate": self.bug_candidate,
             "notes": self.notes,
             "selector": self.selector,
+            "route": self.route,
+            "route_file": self.route_file,
+            "route_stability": self.route_stability,
             "evidence": self.evidence,
             "fallback": self.fallback,
+            "child_results": [child.to_dict() for child in self.child_results],
         }
 
 
@@ -95,6 +104,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--force-stop-before-launch", action="store_true")
     p.add_argument("--evidence-level", choices=["minimal", "normal", "full"], default="normal")
     p.add_argument("--no-launch", action="store_true")
+    p.add_argument("--input", action="append", default=[], metavar="KEY=VALUE", help="Flow input value for {{ inputs.key }} templates.")
     return p.parse_args()
 
 
@@ -111,6 +121,201 @@ def load_yaml(path: Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise DriverError(f"Flow must be a mapping: {path}")
     return data
+
+
+def load_routes(routes_dir: Path = ROUTES_DIR) -> dict[str, dict[str, Any]]:
+    routes: dict[str, dict[str, Any]] = {}
+    if not routes_dir.exists():
+        return routes
+    for path in sorted(routes_dir.glob("*.yaml")):
+        if path.name.startswith("_"):
+            continue
+        data = load_yaml(path)
+        feature = str(data.get("feature") or path.stem.replace("-", "_"))
+        elements = data.get("elements", {})
+        if not isinstance(elements, dict):
+            continue
+        for name, entry in elements.items():
+            if not isinstance(entry, dict):
+                continue
+            key = f"{feature}.{name}"
+            record = dict(entry)
+            record["_route_key"] = key
+            record["_route_file"] = str(path)
+            routes[key] = record
+    return routes
+
+
+def resolve_route_ref(ref: str, route_map: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    if ref in route_map:
+        return route_map[ref]
+    matches = [entry for key, entry in route_map.items() if key.endswith("." + ref)]
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        raise DriverError(f"Route not found: {ref}")
+    raise DriverError(f"Ambiguous route reference {ref}; use full key. Matches: {[m['_route_key'] for m in matches]}")
+
+
+def resolve_step_route(step: dict[str, Any], route_map: dict[str, dict[str, Any]]) -> tuple[dict[str, Any], str, str, str]:
+    if "route" not in step:
+        return step, "", "", ""
+    ref = str(step["route"])
+    route = resolve_route_ref(ref, route_map)
+    resolved = dict(step)
+    if not isinstance(resolved.get("selector"), dict) and isinstance(route.get("selector"), dict):
+        resolved["selector"] = route["selector"]
+    if "coordinate" not in resolved and isinstance(route.get("coordinate"), list):
+        resolved["coordinate"] = route["coordinate"]
+    resolved.setdefault("route_description", route.get("description", ""))
+    return resolved, str(route.get("_route_key") or ref), str(route.get("_route_file") or ""), str(route.get("stability") or "")
+
+
+def parse_cli_inputs(raw_inputs: list[str]) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for item in raw_inputs:
+        if "=" not in item:
+            raise DriverError(f"Invalid --input value {item!r}; expected KEY=VALUE")
+        key, value = item.split("=", 1)
+        key = key.strip()
+        if not key:
+            raise DriverError(f"Invalid --input value {item!r}; input key is empty")
+        values[key] = value
+    return values
+
+
+def resolve_flow_inputs(flow: dict[str, Any], cli_inputs: dict[str, str]) -> dict[str, Any]:
+    spec = flow.get("inputs", {})
+    if not spec:
+        return dict(cli_inputs)
+    if not isinstance(spec, dict):
+        raise DriverError("Flow inputs must be a mapping.")
+    resolved: dict[str, Any] = {}
+    for name, config in spec.items():
+        if not isinstance(config, dict):
+            config = {"default": config}
+        if name in cli_inputs:
+            value: Any = cli_inputs[name]
+        elif "default" in config:
+            value = config["default"]
+        elif config.get("required"):
+            raise DriverError(f"Missing required flow input: {name}")
+        else:
+            continue
+        choices = config.get("choices")
+        if choices and value not in choices:
+            raise DriverError(f"Invalid input {name}={value!r}; expected one of {choices}")
+        resolved[str(name)] = value
+    for name, value in cli_inputs.items():
+        resolved.setdefault(name, value)
+    return resolved
+
+
+def render_templates(value: Any, inputs: dict[str, Any]) -> Any:
+    if isinstance(value, str):
+        def repl(match: re.Match[str]) -> str:
+            key = match.group(1)
+            if key not in inputs:
+                raise DriverError(f"Template references missing input: {key}")
+            return str(inputs[key])
+        return re.sub(r"\{\{\s*inputs\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}", repl, value)
+    if isinstance(value, list):
+        return [render_templates(item, inputs) for item in value]
+    if isinstance(value, dict):
+        return {k: render_templates(v, inputs) for k, v in value.items()}
+    return value
+
+
+def selector_from_value(value: Any) -> dict[str, Any] | None:
+    if isinstance(value, dict):
+        for key in ["selector", "match"]:
+            if isinstance(value.get(key), dict):
+                return value[key]
+        selector = {k: v for k, v in value.items() if k in {"id", "desc", "text", "text_regex", "desc_regex", "any_text", "fallback", "fallback_tap", "timeout"}}
+        return selector or None
+    if isinstance(value, str):
+        return {"id": value}
+    return None
+
+
+def normalize_step(step: dict[str, Any]) -> dict[str, Any]:
+    if "action" in step:
+        return step
+    op_keys = [key for key in step if key in {"tap", "input", "wait", "wait_text", "assert", "sleep", "press_back", "screenshot", "dismiss_if_present", "branch", "log"}]
+    if len(op_keys) != 1:
+        return step
+    op = op_keys[0]
+    value = step[op]
+    name = str(step.get("name") or op)
+    common = {k: v for k, v in step.items() if k not in {op, "name"}}
+    if op == "tap":
+        resolved: dict[str, Any] = {"name": name, "action": "tap", **common}
+        if isinstance(value, str) and "." in value:
+            resolved["route"] = value
+        else:
+            selector = selector_from_value(value)
+            if selector:
+                resolved["selector"] = selector
+        if isinstance(value, dict):
+            resolved.update({k: v for k, v in value.items() if k not in {"selector", "id", "desc", "text", "text_regex", "desc_regex", "any_text", "fallback", "fallback_tap", "timeout"}})
+        return resolved
+    if op == "input":
+        resolved = {"name": name, "action": "input", **common}
+        if isinstance(value, dict):
+            resolved.update(value)
+            selector = selector_from_value(value)
+            if selector:
+                resolved.setdefault("selector", selector)
+        return resolved
+    if op == "wait":
+        selector = selector_from_value(value)
+        resolved = {"name": name, "action": "wait_selector", **common}
+        if selector:
+            resolved["selector"] = selector
+        if isinstance(value, dict):
+            resolved.update({k: v for k, v in value.items() if k not in {"selector", "id", "desc", "text", "text_regex", "desc_regex", "any_text", "fallback", "fallback_tap"}})
+        return resolved
+    if op == "wait_text":
+        resolved = {"name": name, "action": "wait_text", **common}
+        if isinstance(value, str):
+            resolved["text"] = value
+        elif isinstance(value, dict):
+            resolved.update(value)
+            if "value" in value:
+                resolved["text"] = value["value"]
+        return resolved
+    if op == "assert":
+        resolved = {"name": name, "action": "assert_text", **common}
+        if isinstance(value, dict) and isinstance(value.get("texts"), list):
+            resolved["all"] = value["texts"]
+            resolved.update({k: v for k, v in value.items() if k != "texts"})
+        return resolved
+    if op == "sleep":
+        return {"name": name, "action": "sleep", "seconds": value, **common}
+    if op == "press_back":
+        resolved = {"name": name, "action": "press_back", **common}
+        if isinstance(value, dict):
+            resolved.update(value)
+        return resolved
+    if op == "screenshot":
+        label = value.get("name", name) if isinstance(value, dict) else value
+        return {"name": str(label or name), "action": "snapshot", "snapshot": True, **common}
+    if op == "dismiss_if_present":
+        resolved = {"name": name, "action": "dismiss_if_present", **common}
+        if isinstance(value, dict):
+            resolved.update(value)
+            selector = selector_from_value(value)
+            if selector:
+                resolved.setdefault("selector", selector)
+        return resolved
+    if op == "branch":
+        resolved = {"name": name, "action": "branch", **common}
+        if isinstance(value, dict):
+            resolved.update(value)
+        return resolved
+    if op == "log":
+        return {"name": name, "action": "log", "message": value, **common}
+    return step
 
 
 def resolve_flows(flow_arg: str) -> list[Path]:
@@ -349,11 +554,22 @@ def assert_assets(xml_text: str, mode: str) -> tuple[bool, str]:
     return ok, f"asset metrics present: {present}."
 
 
-def run_step(driver: UIDriver, flow_name: str, step: dict[str, Any], out_dir: Path, evidence_level: str, allow_side_effects: bool) -> StepResult:
+def selector_visible(driver: UIDriver, selector: dict[str, Any], timeout: float = 0.5) -> bool:
+    deadline = time.time() + timeout
+    while True:
+        if driver.find_node(selector, refresh=True):
+            return True
+        if time.time() >= deadline:
+            return False
+        time.sleep(0.02 if driver.device.dry_run else 0.2)
+
+
+def run_step(driver: UIDriver, flow_name: str, step: dict[str, Any], out_dir: Path, evidence_level: str, allow_side_effects: bool, route_key: str = "", route_file: str = "", route_stability: str = "") -> StepResult:
     name = str(step.get("name") or step.get("action") or "step")
     action = str(step.get("action"))
     step_dir = out_dir / safe_name(flow_name) / safe_name(name)
     selector = step.get("selector") if isinstance(step.get("selector"), dict) else None
+    child_results: list[StepResult] = []
     try:
         notes: list[str] = []
         fallback = ""
@@ -362,7 +578,16 @@ def run_step(driver: UIDriver, flow_name: str, step: dict[str, Any], out_dir: Pa
                 raise DriverError("tap requires selector")
             info = driver.tap_selector(selector, wait=float(step.get("wait", 1.0)))
             fallback = str(info.get("method", ""))
+            if route_key:
+                notes.append(f"Route: {route_key} ({route_stability or 'unknown'}).")
             notes.append(f"Tapped via {fallback}.")
+        elif action == "wait_selector":
+            if not selector:
+                raise DriverError("wait_selector requires selector")
+            driver.wait_until(selector, timeout=float(step.get("timeout", 8)))
+            if route_key:
+                notes.append(f"Route visible: {route_key} ({route_stability or 'unknown'}).")
+            notes.append(f"Selector present: {selector}.")
         elif action == "input":
             value = str(step.get("value", ""))
             env_name = step.get("env")
@@ -418,15 +643,63 @@ def run_step(driver: UIDriver, flow_name: str, step: dict[str, Any], out_dir: Pa
             notes.append("Snapshot captured.")
         elif action == "ux_snapshot":
             notes.append(f"UX/UI screenshot checkpoint: {step.get('label', name)}.")
+        elif action == "dismiss_if_present":
+            if not selector:
+                raise DriverError("dismiss_if_present requires selector")
+            if selector_visible(driver, selector, timeout=float(step.get("timeout", 0.8))):
+                info = driver.tap_selector(selector, wait=float(step.get("wait", 0.5)))
+                fallback = str(info.get("method", ""))
+                notes.append(f"Dismissed visible selector via {fallback}.")
+            else:
+                notes.append("Optional selector was not present; no-op.")
+        elif action == "branch":
+            cases = step.get("cases", [])
+            if not isinstance(cases, list) or not cases:
+                raise DriverError("branch requires non-empty cases")
+            selected_case: dict[str, Any] | None = None
+            timeout = float(step.get("timeout", 2.0))
+            deadline = time.time() + timeout
+            while True:
+                for case in cases:
+                    if not isinstance(case, dict):
+                        continue
+                    match_selector = selector_from_value(case.get("match"))
+                    if match_selector and driver.find_node(match_selector, refresh=True):
+                        selected_case = case
+                        break
+                if selected_case or time.time() >= deadline:
+                    break
+                time.sleep(0.02 if driver.device.dry_run else 0.3)
+            if selected_case:
+                then_steps = selected_case.get("then", [])
+                if not isinstance(then_steps, list):
+                    raise DriverError("branch case then must be a list of steps")
+                notes.append(f"Branch matched: {selected_case.get('name') or selected_case.get('match')}.")
+                child_results = run_steps(driver, flow_name, then_steps, out_dir, evidence_level, allow_side_effects, load_routes(), prefix=f"{name}_")
+                failed_nested = [r for r in flatten_results(child_results) if r.status != "pass"]
+                if failed_nested:
+                    raise DriverError(f"Branch nested step failed: {failed_nested[0].step}: {'; '.join(failed_nested[0].notes[:2])}")
+                notes.append(f"Branch executed {len(child_results)} nested steps.")
+            else:
+                if step.get("required", False):
+                    raise DriverError("No branch case matched.")
+                notes.append("No branch case matched; no-op.")
         elif action == "sleep":
             time.sleep(0.02 if driver.device.dry_run else float(step.get("seconds", 1)))
             notes.append(f"Slept {step.get('seconds', 1)}s.")
+        elif action == "press_back":
+            driver.keyevent("KEYCODE_BACK", wait=float(step.get("settle", step.get("wait", 0.5))))
+            notes.append("Pressed Android back.")
+        elif action == "log":
+            notes.append(str(step.get("message", "")))
         elif action == "tap_xy":
             target = step.get("coordinate") or step.get("xy")
             if not isinstance(target, list) or len(target) != 2:
                 raise DriverError("tap_xy requires coordinate: [x, y]")
             driver.tap_xy(int(target[0]), int(target[1]), wait=float(step.get("wait", 1.0)))
             fallback = "coordinate"
+            if route_key:
+                notes.append(f"Route: {route_key} ({route_stability or 'unknown'}).")
             notes.append(f"Tapped coordinate {target}.")
         elif action == "swipe":
             start = step.get("start")
@@ -449,26 +722,49 @@ def run_step(driver: UIDriver, flow_name: str, step: dict[str, Any], out_dir: Pa
         else:
             raise DriverError(f"Unsupported action: {action}")
         evidence = snapshot(driver, step_dir, evidence_level, force=bool(step.get("snapshot")))
-        return StepResult(flow_name, name, action, "pass", notes=notes, selector=selector, evidence=evidence, fallback=fallback)
+        return StepResult(flow_name, name, action, "pass", notes=notes, selector=selector, route=route_key, route_file=route_file, route_stability=route_stability, evidence=evidence, fallback=fallback, child_results=child_results)
     except Exception as exc:
         evidence = snapshot(driver, step_dir, evidence_level, failed=True)
         category = str(step.get("failure_category", "automation_issue"))
         bug_candidate = bool(step.get("bug_candidate", False)) and category == "product_bug"
-        return StepResult(flow_name, name, action, "fail", category=category, bug_candidate=bug_candidate, notes=[str(exc)], selector=selector, evidence=evidence)
+        return StepResult(flow_name, name, action, "fail", category=category, bug_candidate=bug_candidate, notes=[str(exc)], selector=selector, route=route_key, route_file=route_file, route_stability=route_stability, evidence=evidence, child_results=child_results)
 
 
-def run_flow(driver: UIDriver, flow_path: Path, out_dir: Path, evidence_level: str, allow_side_effects: bool) -> list[StepResult]:
-    flow = load_yaml(flow_path)
-    flow_name = str(flow.get("name") or flow_path.stem)
+def run_steps(driver: UIDriver, flow_name: str, steps: list[Any], out_dir: Path, evidence_level: str, allow_side_effects: bool, route_map: dict[str, dict[str, Any]], prefix: str = "") -> list[StepResult]:
     results: list[StepResult] = []
-    for step in flow.get("steps", []):
-        if not isinstance(step, dict):
+    for raw_step in steps:
+        if not isinstance(raw_step, dict):
             continue
-        result = run_step(driver, flow_name, step, out_dir, evidence_level, allow_side_effects)
+        step = normalize_step(raw_step)
+        if prefix:
+            step = dict(step)
+            step["name"] = prefix + str(step.get("name") or step.get("action") or "step")
+        resolved_step, route_key, route_file, route_stability = resolve_step_route(step, route_map)
+        result = run_step(driver, flow_name, resolved_step, out_dir, evidence_level, allow_side_effects, route_key, route_file, route_stability)
         results.append(result)
         if result.status != "pass" and not step.get("continue_on_failure", False):
             break
     return results
+
+
+def run_flow(driver: UIDriver, flow_path: Path, out_dir: Path, evidence_level: str, allow_side_effects: bool, cli_inputs: dict[str, str] | None = None) -> list[StepResult]:
+    flow = load_yaml(flow_path)
+    flow_name = str(flow.get("name") or flow_path.stem)
+    route_map = load_routes()
+    inputs = resolve_flow_inputs(flow, cli_inputs or {})
+    rendered_steps = render_templates(flow.get("steps", []), inputs)
+    if not isinstance(rendered_steps, list):
+        raise DriverError(f"Flow steps must be a list: {flow_path}")
+    return run_steps(driver, flow_name, rendered_steps, out_dir, evidence_level, allow_side_effects, route_map)
+
+
+def flatten_results(results: list[StepResult]) -> list[StepResult]:
+    flat: list[StepResult] = []
+    for result in results:
+        flat.append(result)
+        if result.child_results:
+            flat.extend(flatten_results(result.child_results))
+    return flat
 
 
 def bug_template(results: list[StepResult], out_dir: Path) -> list[dict[str, Any]]:
@@ -575,6 +871,20 @@ def build_learning_candidates(env: dict[str, Any], results: list[StepResult], fl
         )
 
     for result in results:
+        if result.route and (result.fallback == "coordinate" or result.route_stability == "fallback"):
+            route_target = result.route_file
+            if route_target:
+                try:
+                    route_target = str(Path(route_target).resolve().relative_to(SKILL_DIR.resolve()))
+                except ValueError:
+                    route_target = str(route_target)
+            add(
+                "route_update",
+                f"Harden route {result.route}",
+                "Replace this route's coordinate/text fallback with a stable resource-id or content-desc after Android exposes an automation ID.",
+                result,
+                target=route_target or "routes/",
+            )
         if result.fallback == "coordinate" or result.action in {"tap_xy", "swipe"}:
             add(
                 "selector_update",
@@ -670,7 +980,8 @@ def write_learning_artifacts(out_dir: Path, report_json: dict[str, Any], results
 
 
 def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], results: list[StepResult], flow_paths: list[Path]) -> tuple[Path, Path]:
-    counts = {s: sum(1 for r in results if r.status == s) for s in ["pass", "fail"]}
+    flat_results = flatten_results(results)
+    counts = {s: sum(1 for r in flat_results if r.status == s) for s in ["pass", "fail"]}
     flow_records = snapshot_flows_used(out_dir, flow_paths)
     report_json = {
         "generated": dt.datetime.now().isoformat(timespec="seconds"),
@@ -678,9 +989,9 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
         "setup_notes": setup_notes,
         "summary": counts,
         "flows_used": flow_records,
-        "results": [r.to_dict() for r in results],
+        "results": [r.to_dict() for r in flat_results],
     }
-    learning_paths = write_learning_artifacts(out_dir, report_json, results, flow_records)
+    learning_paths = write_learning_artifacts(out_dir, report_json, flat_results, flow_records)
     report_json["learning_artifacts"] = learning_paths
     json_path = out_dir / REPORT_JSON_NAME
     json_path.write_text(json.dumps(report_json, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -699,9 +1010,13 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
     lines.append("\n## Setup Notes\n")
     for note in setup_notes:
         lines.append(f"- {note}\n")
-    watch_monitor_results = [r for r in results if r.flow.startswith("watch-monitor-")]
+    watch_monitor_results = [r for r in flat_results if r.flow.startswith("watch-monitor-")]
     if watch_monitor_results:
-        fallback_steps = [f"{r.flow}/{r.step}" for r in watch_monitor_results if r.fallback == "coordinate"]
+        fallback_steps = [
+            f"{r.flow}/{r.step}"
+            for r in watch_monitor_results
+            if r.fallback == "coordinate" or r.route_stability == "fallback"
+        ]
         lines.append("\n## Watch Monitor Summary\n")
         if env.get("requirement_doc"):
             lines.append(f"- Requirement source: `{env['requirement_doc']}`\n")
@@ -712,7 +1027,7 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
     lines.append("\n## Test Matrix\n")
     lines.append("| Flow | Step | Action | Status | Category | Notes | Evidence |\n")
     lines.append("| --- | --- | --- | --- | --- | --- | --- |\n")
-    for r in results:
+    for r in flat_results:
         ev = " ".join(f"[{k}]({Path(v).as_posix()})" for k, v in r.evidence.items() if k in {"screenshot", "summary", "xml"})
         notes = "<br>".join(n.replace("|", "\\|") for n in r.notes[:3])
         lines.append(f"| {r.flow} | {r.step} | {r.action} | {r.status} | {r.category or '-'} | {notes} | {ev} |\n")
@@ -726,7 +1041,7 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
     lines.append(f"- Flow snapshots: `{learning_paths['flows_used_dir']}`.\n")
     md_path = out_dir / REPORT_NAME
     md_path.write_text("".join(lines), encoding="utf-8")
-    (out_dir / BUG_TEMPLATE_NAME).write_text(json.dumps(bug_template(results, out_dir), ensure_ascii=False, indent=2), encoding="utf-8")
+    (out_dir / BUG_TEMPLATE_NAME).write_text(json.dumps(bug_template(flat_results, out_dir), ensure_ascii=False, indent=2), encoding="utf-8")
     return md_path, json_path
 
 
@@ -757,8 +1072,9 @@ def main() -> int:
     driver = UIDriver(device, out_dir)
     all_results: list[StepResult] = []
     flow_paths = resolve_flows(args.flow)
+    flow_inputs = parse_cli_inputs(args.input)
     for flow_path in flow_paths:
-        all_results.extend(run_flow(driver, flow_path, out_dir, args.evidence_level, args.allow_side_effects))
+        all_results.extend(run_flow(driver, flow_path, out_dir, args.evidence_level, args.allow_side_effects, flow_inputs))
     md_path, _ = write_reports(out_dir, env, setup_notes, all_results, flow_paths)
     print(f"Report: {md_path}")
     print(f"Bug template: {out_dir / BUG_TEMPLATE_NAME}")

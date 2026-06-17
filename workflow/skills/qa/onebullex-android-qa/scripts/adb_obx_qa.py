@@ -42,6 +42,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device-start-state")
     parser.add_argument("--force-stop-before-launch", action="store_true")
     parser.add_argument("--evidence-level", choices=["minimal", "normal", "full"], default="normal")
+    parser.add_argument("--input", action="append", default=[], metavar="KEY=VALUE", help="Flow input value for {{ inputs.key }} templates.")
     return parser.parse_args()
 
 
@@ -67,6 +68,8 @@ def run_flow(args: argparse.Namespace, flow: str) -> int:
         cmd.append("--accept-version-gate-risk")
     if args.force_stop_before_launch:
         cmd.append("--force-stop-before-launch")
+    for item in args.input:
+        cmd.extend(["--input", item])
     return subprocess.run(cmd).returncode
 
 

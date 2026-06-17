@@ -79,6 +79,9 @@ For new feature/new requirement automation, read `references/test-task-planning-
 ## Flow System
 
 - Stable flows live in `flows/*.yaml`.
+- Shared page contracts live in `contract.md` and reusable selectors live in `routes/*.yaml`.
+- Prefer flow steps with `route: feature.element` over repeating selectors or coordinates in multiple flows.
+- Flow DSL also supports `inputs` templates, optional `dismiss_if_present`, `branch`, `press_back`, `log`, and shorthand step syntax compatible with `ui-automation-flow`.
 - `scripts/ui_driver.py` provides `dump_xml`, `find_node`, `tap_selector`, `input_text`, `wait_until`, and evidence helpers.
 - `scripts/flow_runner.py` executes Flow DSL and writes:
   - `onebullex-android-qa-report.md`
@@ -91,6 +94,12 @@ For new feature/new requirement automation, read `references/test-task-planning-
   - per-step `ui.xml`, `ui-summary.txt`, optional screenshots/logcat
 
 Read `references/flow-format.md` before adding or changing flows.
+
+When a new page is explored, first add or update its route entry with the best
+known selector and any temporary coordinate fallback. Then reference that route
+from the flow. If the route still needs a stable Android test ID, mark it with
+`needs_test_id: true` so the learning loop and developer collaboration notes
+can converge on the same target.
 
 ## Learning Loop
 

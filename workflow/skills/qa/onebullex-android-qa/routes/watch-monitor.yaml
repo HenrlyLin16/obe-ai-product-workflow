@@ -1,0 +1,82 @@
+{
+  "feature": "watch_monitor",
+  "version": 1,
+  "description": "实时盯盘浮窗专项自动化路由图。坐标均为 Solana Seeker 当前分辨率下的临时 fallback，需要 Android 后续补稳定 ID。",
+  "elements": {
+    "bottom_tab_futures": {
+      "description": "底部导航合约入口",
+      "stability": "text",
+      "needs_test_id": true,
+      "selector": {
+        "desc": "tab-futures",
+        "text": "合约",
+        "fallback": [600, 2510]
+      }
+    },
+    "contract_kline_tab": {
+      "description": "合约页 K 线图入口",
+      "stability": "text",
+      "needs_test_id": true,
+      "selector": {
+        "text": "K线图",
+        "fallback": [1002, 212]
+      }
+    },
+    "kline_settings_button": {
+      "description": "K 线页设置按钮",
+      "stability": "text",
+      "needs_test_id": true,
+      "selector": {
+        "desc": "设置",
+        "text": "设置",
+        "fallback": [1133, 682]
+      }
+    },
+    "settings_watch_monitor_entry": {
+      "description": "设置面板实时盯盘浮窗入口",
+      "stability": "fallback",
+      "needs_test_id": true,
+      "selector": {
+        "text": "实时盯盘浮窗",
+        "fallback": [600, 2325]
+      },
+      "coordinate": [600, 2325]
+    },
+    "manage_toggle": {
+      "description": "实时盯盘管理页开关",
+      "stability": "fallback",
+      "needs_test_id": true,
+      "selector": {
+        "text_regex": "实时盯盘浮窗|开启后",
+        "fallback": [1062, 564]
+      },
+      "coordinate": [1062, 564]
+    },
+    "bottom_add_pair_cta": {
+      "description": "管理页底部添加币对 CTA",
+      "stability": "fallback",
+      "needs_test_id": true,
+      "selector": {
+        "text": "添加币对",
+        "fallback": [600, 2450]
+      },
+      "coordinate": [600, 2450]
+    },
+    "first_contract_pair_checkbox": {
+      "description": "Add Sheet 第一个合约币对选择控件",
+      "stability": "fallback",
+      "needs_test_id": true,
+      "selector": {
+        "text": "BTCUSDT 永续",
+        "fallback": [1128, 1188]
+      },
+      "coordinate": [1128, 1188]
+    },
+    "add_sheet_back_or_close": {
+      "description": "Add Sheet 返回或关闭控件",
+      "stability": "fallback",
+      "needs_test_id": true,
+      "coordinate": [110, 312]
+    }
+  }
+}

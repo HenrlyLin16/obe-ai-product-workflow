@@ -1,0 +1,19 @@
+{
+  "project": "onebullex-android-qa",
+  "version": 1,
+  "automation": {
+    "preferred_serial": "SM02G4061923909",
+    "default_channel": "dev",
+    "evidence_root": "/tmp/onebullex-android-qa"
+  },
+  "android": {
+    "activity": "com.icy.neptune.MainActivity",
+    "package": {
+      "dev": "com.onemore.onebullex.dev",
+      "prod": "com.onemore.onebullex"
+    }
+  },
+  "routes": [
+    "watch-monitor.yaml"
+  ]
+}

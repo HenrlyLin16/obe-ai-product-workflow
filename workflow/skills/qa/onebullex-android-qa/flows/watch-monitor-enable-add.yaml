@@ -5,10 +5,7 @@
     {
       "name": "open_home_contract_entry",
       "action": "tap",
-      "selector": {
-        "text": "合约",
-        "fallback": [600, 2510]
-      },
+      "route": "watch_monitor.bottom_tab_futures",
       "wait": 1.8,
       "snapshot": true,
       "failure_category": "environment_blocker"
@@ -23,42 +20,35 @@
     {
       "name": "open_kline_page",
       "action": "tap",
-      "selector": {
-        "text": "K线图",
-        "fallback": [1002, 212]
-      },
+      "route": "watch_monitor.contract_kline_tab",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
     {
       "name": "open_settings_sheet",
       "action": "tap",
-      "selector": {
-        "desc": "设置",
-        "text": "设置",
-        "fallback": [1133, 682]
-      },
+      "route": "watch_monitor.kline_settings_button",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
     {
       "name": "open_watch_monitor_page",
-      "action": "tap_xy",
-      "coordinate": [600, 2325],
+      "action": "tap",
+      "route": "watch_monitor.settings_watch_monitor_entry",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
     {
       "name": "enable_watch_monitor",
-      "action": "tap_xy",
-      "coordinate": [1062, 564],
+      "action": "tap",
+      "route": "watch_monitor.manage_toggle",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
     {
       "name": "open_add_pair_sheet",
-      "action": "tap_xy",
-      "coordinate": [600, 2450],
+      "action": "tap",
+      "route": "watch_monitor.bottom_add_pair_cta",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
@@ -72,8 +62,8 @@
     },
     {
       "name": "select_first_contract_pair",
-      "action": "tap_xy",
-      "coordinate": [1128, 1188],
+      "action": "tap",
+      "route": "watch_monitor.first_contract_pair_checkbox",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
@@ -88,7 +78,7 @@
     {
       "name": "close_add_pair_sheet",
       "action": "tap_xy",
-      "coordinate": [110, 312],
+      "route": "watch_monitor.add_sheet_back_or_close",
       "snapshot": true,
       "failure_category": "automation_issue"
     },
