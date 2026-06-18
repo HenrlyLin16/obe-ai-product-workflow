@@ -1,0 +1,48 @@
+{
+  "name": "smoke-public",
+  "version": 1,
+  "description": "Public zh-cn homepage smoke.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "iab",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "guest",
+  "required_start_state": "public",
+  "requires_health_gate": false,
+  "side_effects": "none",
+  "public_only": true,
+  "steps": [
+    {
+      "name": "open_home",
+      "action": "goto",
+      "url": "/",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ensure_chinese_locale",
+      "action": "ensure_locale",
+      "signals": [
+        "登录",
+        "市场",
+        "合约",
+        "现货"
+      ],
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "core_nav_visible",
+      "action": "assert_text",
+      "any": [
+        "市场",
+        "合约",
+        "现货",
+        "登录"
+      ],
+      "snapshot": true,
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    }
+  ]
+}

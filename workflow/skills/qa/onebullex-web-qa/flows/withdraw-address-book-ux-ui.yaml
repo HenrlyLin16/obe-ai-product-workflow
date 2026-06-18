@@ -1,0 +1,38 @@
+{
+  "name": "withdraw-address-book-ux-ui",
+  "version": 1,
+  "description": "Screenshot-backed UX/UI checkpoints for withdraw address book flow.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "withdraw-capable",
+  "required_start_state": "logged-in-withdraw",
+  "requires_health_gate": true,
+  "side_effects": "none",
+  "public_only": false,
+  "start_url": "https://testnet.1bullex.com/zh-cn/asset?tab=Withdraw",
+  "steps": [
+    {
+      "name": "withdraw_page_snapshot",
+      "action": "goto",
+      "route": "withdraw.withdraw_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_withdraw_page",
+      "action": "ux_snapshot",
+      "label": "withdraw-page",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "ux_address_book_entry",
+      "action": "ux_snapshot",
+      "label": "address-book-entry",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    }
+  ]
+}

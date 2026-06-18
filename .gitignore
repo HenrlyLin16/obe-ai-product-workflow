@@ -33,6 +33,7 @@ workflow/skills/qa/**/*.pyc
 !workflow/skills/product/web3-product-experience-expert/**
 !scripts/
 !scripts/sync-onebullex-android-qa-skill.sh
+!scripts/sync-onebullex-web-qa-skill.sh
 !scripts/sync-workflow-skills-to-cursor.sh
 !scripts/sync-workflow-skills-to-codex.sh
 

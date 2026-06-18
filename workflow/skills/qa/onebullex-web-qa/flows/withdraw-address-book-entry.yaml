@@ -1,0 +1,53 @@
+{
+  "name": "withdraw-address-book-entry",
+  "version": 1,
+  "description": "Withdraw page entry and address-book accessibility checks.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "withdraw-capable",
+  "required_start_state": "logged-in-withdraw",
+  "requires_health_gate": true,
+  "side_effects": "none",
+  "public_only": false,
+  "start_url": "https://testnet.1bullex.com/zh-cn/asset?tab=Withdraw",
+  "steps": [
+    {
+      "name": "open_withdraw_page",
+      "action": "goto",
+      "route": "withdraw.withdraw_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "withdraw_page_visible",
+      "action": "assert_visible",
+      "route": "withdraw.withdraw_page",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "address_input_visible",
+      "action": "assert_visible",
+      "route": "withdraw.address_input",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "address_book_icon_visible",
+      "action": "assert_visible",
+      "route": "withdraw.address_book_icon",
+      "snapshot": true,
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "address_input_visible",
+      "action": "assert_visible",
+      "route": "withdraw.address_input",
+      "snapshot": true,
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    }
+  ]
+}

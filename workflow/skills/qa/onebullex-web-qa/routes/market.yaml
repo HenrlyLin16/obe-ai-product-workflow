@@ -1,0 +1,11 @@
+{
+  "feature": "market",
+  "version": 1,
+  "elements": {
+    "page": {"description":"Market page","stability":"text","url":"/market","selector":{"testid":"market-page","text_regex":"市场|行情|Market|Trading Pair|Latest Price"}},
+    "ticker_table": {"description":"Market ticker table","stability":"fallback","needs_test_id":true,"selector":{"testid":"market-ticker-table","css":"table, [class*=market], [class*=ticker]","text_regex":"Trading Pair|Latest Price|24h Price Change|24H Trading Volume|Action|币种|价格|涨跌"}},
+    "symbol_header": {"description":"Symbol column header","stability":"text","needs_test_id":true,"selector":{"testid":"market-sort-symbol","text_regex":"币种|交易对|Symbol|Trading Pair"}},
+    "price_header": {"description":"Price column header","stability":"text","needs_test_id":true,"selector":{"testid":"market-sort-price","text_regex":"价格|最新价|Price|Latest Price"}},
+    "change_header": {"description":"Change percent column header","stability":"text","needs_test_id":true,"selector":{"testid":"market-sort-change","text_regex":"涨跌|涨幅|Change|Price Change"}}
+  }
+}

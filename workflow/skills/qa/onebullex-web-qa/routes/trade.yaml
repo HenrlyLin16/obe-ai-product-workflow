@@ -1,0 +1,14 @@
+{
+  "feature": "trade",
+  "version": 1,
+  "elements": {
+    "spot_page": {"description":"Spot trade page","stability":"text","url":"/spot","selector":{"testid":"spot-trade-page","text_regex":"现货|买入|卖出|Spot"}},
+    "futures_page": {"description":"Futures trade page","stability":"text","url":"/futures","selector":{"testid":"futures-trade-page","text_regex":"合约|开仓|平仓|Futures"}},
+    "price_input": {"description":"Order price input","stability":"fallback","needs_test_id":true,"selector":{"testid":"trade-price-input","css":"input[name*=price], input[placeholder*=价格], input[placeholder*=Price]"}},
+    "qty_input": {"description":"Order quantity input","stability":"fallback","needs_test_id":true,"selector":{"testid":"trade-qty-input","css":"input[name*=qty], input[name*=amount], input[placeholder*=数量], input[placeholder*=Amount]"}},
+    "open_long_btn": {"description":"Open long / buy button","stability":"text","needs_test_id":true,"selector":{"testid":"trade-open-long-btn","text_regex":"开多|买入|Buy|Long"}},
+    "open_short_btn": {"description":"Open short / sell button","stability":"text","needs_test_id":true,"selector":{"testid":"trade-open-short-btn","text_regex":"开空|卖出|Sell|Short"}},
+    "confirm_submit_btn": {"description":"Final submit/confirm button","stability":"text","needs_test_id":true,"selector":{"testid":"order-confirm-button","text_regex":"确认|提交|下单|Confirm|Submit"}},
+    "toast": {"description":"Toast container","stability":"fallback","needs_test_id":true,"selector":{"testid":"toast-container","css":"[class*=toast], [class*=notification], [role=alert]"}}
+  }
+}

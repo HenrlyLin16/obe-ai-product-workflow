@@ -1,0 +1,86 @@
+{
+  "name": "env-health-check",
+  "version": 1,
+  "description": "CEX testnet environment health gate.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "iab",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "guest",
+  "required_start_state": "public",
+  "requires_health_gate": false,
+  "side_effects": "none",
+  "public_only": true,
+  "steps": [
+    {
+      "name": "open_home",
+      "action": "goto",
+      "url": "/",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ensure_chinese_locale",
+      "action": "ensure_locale",
+      "signals": [
+        "登录",
+        "市场",
+        "合约"
+      ],
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "login_entry_visible",
+      "action": "assert_visible",
+      "route": "public.login_entry",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "market_nav_visible",
+      "action": "assert_visible",
+      "route": "public.nav_market",
+      "failure_category": "service_degradation"
+    },
+    {
+      "name": "ws_probe_public_ticker",
+      "action": "assert_ws_freshness",
+      "freshness_window_ms": 5000,
+      "non_blocking": true,
+      "failure_category": "service_degradation"
+    },
+    {
+      "name": "spot_route_reachable",
+      "action": "goto",
+      "route": "trade.spot_page",
+      "snapshot": true,
+      "failure_category": "service_degradation"
+    },
+    {
+      "name": "spot_skeleton_visible",
+      "action": "assert_visible",
+      "route": "trade.spot_page",
+      "failure_category": "service_degradation"
+    },
+    {
+      "name": "futures_route_reachable",
+      "action": "goto",
+      "route": "trade.futures_page",
+      "snapshot": true,
+      "failure_category": "service_degradation"
+    },
+    {
+      "name": "assets_route_reachable",
+      "action": "goto",
+      "route": "assets_orders.asset_page",
+      "snapshot": true,
+      "failure_category": "service_degradation"
+    },
+    {
+      "name": "no_maintenance_banner",
+      "action": "assert_not_visible",
+      "route": "public.maintenance_banner",
+      "non_blocking": true,
+      "failure_category": "service_degradation"
+    }
+  ]
+}

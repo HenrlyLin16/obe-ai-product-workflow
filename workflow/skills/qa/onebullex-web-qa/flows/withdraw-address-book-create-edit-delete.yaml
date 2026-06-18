@@ -1,0 +1,61 @@
+{
+  "name": "withdraw-address-book-create-edit-delete",
+  "version": 1,
+  "description": "Address-book create/edit/delete managed-flow checks under withdraw.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "withdraw-capable",
+  "required_start_state": "logged-in-withdraw",
+  "requires_health_gate": true,
+  "side_effects": "withdraw-probe-only",
+  "public_only": false,
+  "start_url": "https://testnet.1bullex.com/zh-cn/asset?tab=Withdraw",
+  "steps": [
+    {
+      "name": "open_withdraw_page",
+      "action": "goto",
+      "route": "withdraw.withdraw_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "address_book_icon_visible",
+      "action": "assert_visible",
+      "route": "withdraw.address_book_icon",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "address_book_page_visible",
+      "action": "assert_visible",
+      "route": "withdraw.address_book_page",
+      "non_blocking": true,
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "create_address_success_toast",
+      "action": "assert_visible",
+      "route": "withdraw.toast_create_success",
+      "non_blocking": true,
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "edit_remark_success_toast",
+      "action": "assert_visible",
+      "route": "withdraw.toast_create_success",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "delete_address_success_toast",
+      "action": "assert_visible",
+      "route": "withdraw.toast_delete_success",
+      "non_blocking": true,
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    }
+  ]
+}

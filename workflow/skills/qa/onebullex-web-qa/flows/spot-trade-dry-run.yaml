@@ -1,0 +1,52 @@
+{
+  "name": "spot-trade-dry-run",
+  "version": 1,
+  "description": "Spot order form path to final confirmation, no default submit.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "funded-spot",
+  "required_start_state": "logged-in-funded-spot",
+  "requires_health_gate": true,
+  "side_effects": "blocked-by-default",
+  "public_only": false,
+  "steps": [
+    {
+      "name": "open_spot",
+      "action": "goto",
+      "route": "trade.spot_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "price_input_visible",
+      "action": "assert_visible",
+      "route": "trade.price_input",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "qty_input_visible",
+      "action": "assert_visible",
+      "route": "trade.qty_input",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "buy_button_visible",
+      "action": "assert_visible",
+      "route": "trade.open_long_btn",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "stop_before_submit",
+      "action": "safety_gate",
+      "reason": "Spot final submit requires explicit testnet approval.",
+      "requires_side_effect": true,
+      "requires_confirm_submit": true,
+      "failure_category": "environment_blocker"
+    }
+  ]
+}
