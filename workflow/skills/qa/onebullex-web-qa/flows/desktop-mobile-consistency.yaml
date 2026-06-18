@@ -1,0 +1,42 @@
+{
+  "name": "desktop-mobile-consistency",
+  "version": 1,
+  "description": "Cross-viewport public page consistency checkpoints.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "iab",
+  "locale": "zh-cn",
+  "viewport": "both",
+  "required_account_profile": "guest",
+  "required_start_state": "public",
+  "requires_health_gate": false,
+  "side_effects": "none",
+  "public_only": true,
+  "steps": [
+    {
+      "name": "open_home",
+      "action": "goto",
+      "url": "/",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_home_viewport",
+      "action": "ux_snapshot",
+      "label": "home-cross-viewport",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "core_texts_present",
+      "action": "assert_text",
+      "any": [
+        "登录",
+        "市场",
+        "合约",
+        "现货"
+      ],
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "OneBullEx Web QA"
+  short_description: "Interactive Codex Web QA first, with local Playwright runner for stateless flows"
+  default_prompt: "Use $onebullex-web-qa. Prefer Codex interactive execution with Browser/Chrome plugins for live testnet validation, especially for login/account/trade flows; for stateless public-page regression, you may use the local Playwright runtime. For new requirements, start with a test plan; before non-public flows, run the CEX environment health gate, then execute flows, produce a report with page-vs-result dual verification, and review the generated QA learning artifacts before optimizing the Skill. Default to zh-cn locale and treat the repo source as canonical."

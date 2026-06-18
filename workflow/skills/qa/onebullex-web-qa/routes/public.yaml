@@ -1,0 +1,12 @@
+{
+  "feature": "public",
+  "version": 1,
+  "elements": {
+    "home": {"description":"Testnet homepage","stability":"stable","url":"/"},
+    "login_entry": {"description":"Login entry","stability":"text","needs_test_id":true,"selector":{"testid":"login-entry","text":"登录","text_regex":"登录|Log in|Login"}},
+    "nav_market": {"description":"Market navigation","stability":"text","needs_test_id":true,"selector":{"testid":"nav-market","text":"市场","text_regex":"市场|行情|Market"}},
+    "nav_spot": {"description":"Spot trading navigation","stability":"text","needs_test_id":true,"selector":{"testid":"nav-spot","text":"现货","text_regex":"现货|Spot"}},
+    "nav_futures": {"description":"Futures trading navigation","stability":"text","needs_test_id":true,"selector":{"testid":"nav-futures","text":"合约","text_regex":"合约|Futures"}},
+    "maintenance_banner": {"description":"Global maintenance or risk banner","stability":"text","selector":{"text_regex":"维护|暂停|风控|系统升级|maintenance|risk"}}
+  }
+}

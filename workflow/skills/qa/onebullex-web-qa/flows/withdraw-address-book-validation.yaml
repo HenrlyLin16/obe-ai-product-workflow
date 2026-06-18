@@ -1,0 +1,60 @@
+{
+  "name": "withdraw-address-book-validation",
+  "version": 1,
+  "description": "Withdraw page and address-book validation behavior checks.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "withdraw-capable",
+  "required_start_state": "logged-in-withdraw",
+  "requires_health_gate": true,
+  "side_effects": "none",
+  "public_only": false,
+  "start_url": "https://testnet.1bullex.com/zh-cn/asset?tab=Withdraw",
+  "steps": [
+    {
+      "name": "open_withdraw_page",
+      "action": "goto",
+      "route": "withdraw.withdraw_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "address_book_icon_visible",
+      "action": "assert_visible",
+      "route": "withdraw.address_book_icon",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "save_to_address_book_toggle_observable",
+      "action": "assert_visible",
+      "route": "withdraw.save_to_address_book_checkbox",
+      "non_blocking": true,
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "duplicate_toast_rule_documented",
+      "action": "assert_visible",
+      "route": "withdraw.toast_error_duplicate",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "verification_error_rule_documented",
+      "action": "assert_visible",
+      "route": "withdraw.toast_error_code",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "empty_address_required_validation",
+      "action": "assert_visible",
+      "route": "withdraw.address_required_error",
+      "non_blocking": true,
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    }
+  ]
+}

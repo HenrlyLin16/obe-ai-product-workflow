@@ -1,0 +1,14 @@
+{
+  "project": "onebullex-web-qa",
+  "version": 1,
+  "base_url": "https://testnet.1bullex.com/",
+  "default_locale": "zh-cn",
+  "routes": [
+    "public.yaml",
+    "market.yaml",
+    "auth-account.yaml",
+    "trade.yaml",
+    "assets-orders.yaml",
+    "withdraw.yaml"
+  ]
+}

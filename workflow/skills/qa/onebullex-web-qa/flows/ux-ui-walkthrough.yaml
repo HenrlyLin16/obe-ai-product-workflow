@@ -1,0 +1,72 @@
+{
+  "name": "ux-ui-walkthrough",
+  "version": 1,
+  "description": "Screenshot-backed UX/UI walkthrough for public and trade surfaces.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "iab",
+  "locale": "zh-cn",
+  "viewport": "both",
+  "required_account_profile": "guest",
+  "required_start_state": "public",
+  "requires_health_gate": false,
+  "side_effects": "none",
+  "public_only": true,
+  "steps": [
+    {
+      "name": "home_snapshot",
+      "action": "goto",
+      "url": "/",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_home",
+      "action": "ux_snapshot",
+      "label": "home-zh-cn",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "market_snapshot",
+      "action": "goto",
+      "route": "market.page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_market",
+      "action": "ux_snapshot",
+      "label": "market-list",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "spot_snapshot",
+      "action": "goto",
+      "route": "trade.spot_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_spot",
+      "action": "ux_snapshot",
+      "label": "spot-trade-form",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "futures_snapshot",
+      "action": "goto",
+      "route": "trade.futures_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ux_futures",
+      "action": "ux_snapshot",
+      "label": "futures-trade-form",
+      "snapshot": true,
+      "failure_category": "requirement_unclear"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+../../onebullex-android-qa/references/ux-ui-checklist.md

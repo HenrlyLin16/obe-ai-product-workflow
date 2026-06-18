@@ -1,0 +1,58 @@
+{
+  "name": "assets-orders-positions",
+  "version": 1,
+  "description": "Asset, order, position, and history consistency surfaces.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "basic-login",
+  "required_start_state": "logged-in",
+  "requires_health_gate": true,
+  "side_effects": "none",
+  "public_only": false,
+  "steps": [
+    {
+      "name": "open_assets",
+      "action": "goto",
+      "route": "assets_orders.asset_page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "spot_balance_visible",
+      "action": "assert_visible",
+      "route": "assets_orders.spot_balance",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "futures_margin_visible",
+      "action": "assert_visible",
+      "route": "assets_orders.futures_margin",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "order_table_observable",
+      "action": "assert_visible",
+      "route": "assets_orders.order_table",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "position_table_observable",
+      "action": "assert_visible",
+      "route": "assets_orders.position_table",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "history_table_observable",
+      "action": "assert_visible",
+      "route": "assets_orders.history_table",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    }
+  ]
+}

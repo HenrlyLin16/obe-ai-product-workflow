@@ -1,0 +1,10 @@
+{
+  "feature": "auth_account",
+  "version": 1,
+  "elements": {
+    "user_menu": {"description":"Logged-in user menu","stability":"fallback","needs_test_id":true,"selector":{"testid":"user-menu-trigger","css":"[class*=user], [class*=avatar]","text_regex":"UID|账户|Account"}},
+    "user_uid": {"description":"User UID signal","stability":"fallback","needs_test_id":true,"selector":{"testid":"user-uid","text_regex":"UID|用户ID|User ID"}},
+    "asset_nav": {"description":"Asset entry","stability":"text","needs_test_id":true,"selector":{"testid":"nav-assets","text_regex":"资产|总览|Assets"}},
+    "logout_or_login_signal": {"description":"Guest/login state signal","stability":"text","selector":{"text_regex":"登录|注册|退出|UID|账户"}}
+  }
+}

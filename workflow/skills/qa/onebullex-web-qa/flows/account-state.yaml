@@ -1,0 +1,41 @@
+{
+  "name": "account-state",
+  "version": 1,
+  "description": "Chrome login and account profile probe.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "chrome",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "basic-login",
+  "required_start_state": "logged-in",
+  "requires_health_gate": true,
+  "side_effects": "none",
+  "public_only": false,
+  "steps": [
+    {
+      "name": "open_home_chrome",
+      "action": "goto",
+      "url": "/",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "account_signal_visible",
+      "action": "assert_visible",
+      "route": "auth_account.user_menu",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "probe_account_profile",
+      "action": "assert_account_profile",
+      "profile": "basic-login",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "snapshot_account_state",
+      "action": "snapshot",
+      "label": "account-state",
+      "snapshot": true
+    }
+  ]
+}

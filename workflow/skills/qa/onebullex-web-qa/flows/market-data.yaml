@@ -1,0 +1,67 @@
+{
+  "name": "market-data",
+  "version": 1,
+  "description": "Market display, table structure, sort and WS freshness.",
+  "base_url": "https://testnet.1bullex.com/",
+  "browser_mode": "iab",
+  "locale": "zh-cn",
+  "viewport": "desktop",
+  "required_account_profile": "guest",
+  "required_start_state": "public",
+  "requires_health_gate": true,
+  "side_effects": "none",
+  "public_only": true,
+  "steps": [
+    {
+      "name": "open_market",
+      "action": "goto",
+      "route": "market.page",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "ticker_table_visible",
+      "action": "assert_visible",
+      "route": "market.ticker_table",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "symbol_header_visible",
+      "action": "assert_visible",
+      "route": "market.symbol_header",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "price_header_visible",
+      "action": "assert_visible",
+      "route": "market.price_header",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "change_header_visible",
+      "action": "assert_visible",
+      "route": "market.change_header",
+      "failure_category": "product_bug",
+      "bug_candidate": true
+    },
+    {
+      "name": "symbol_sort_observable",
+      "action": "assert_table_sort",
+      "route": "market.ticker_table",
+      "col_key": "symbol",
+      "order": "asc",
+      "non_blocking": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "ws_freshness",
+      "action": "assert_ws_freshness",
+      "freshness_window_ms": 5000,
+      "non_blocking": true,
+      "failure_category": "service_degradation"
+    }
+  ]
+}

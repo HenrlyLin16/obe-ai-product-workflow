@@ -1,0 +1,12 @@
+{
+  "feature": "assets_orders",
+  "version": 1,
+  "elements": {
+    "asset_page": {"description":"Asset overview page","stability":"text","url":"/assets","selector":{"testid":"asset-page","text_regex":"资产|总资产|Assets|Balance"}},
+    "spot_balance": {"description":"Spot balance block","stability":"fallback","needs_test_id":true,"selector":{"testid":"asset-spot-balance","text_regex":"现货|Spot|USDT"}},
+    "futures_margin": {"description":"Futures margin block","stability":"fallback","needs_test_id":true,"selector":{"testid":"asset-futures-margin","text_regex":"合约|保证金|Futures|Margin"}},
+    "order_table": {"description":"Current order table","stability":"fallback","needs_test_id":true,"selector":{"testid":"order-table","css":"table, [class*=order]"}},
+    "position_table": {"description":"Position table","stability":"fallback","needs_test_id":true,"selector":{"testid":"position-table","css":"table, [class*=position]"}},
+    "history_table": {"description":"Trade/order history table","stability":"fallback","needs_test_id":true,"selector":{"testid":"history-table","css":"table, [class*=history]"}}
+  }
+}
