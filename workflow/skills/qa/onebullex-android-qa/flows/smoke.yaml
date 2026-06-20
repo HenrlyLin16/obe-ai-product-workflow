@@ -1,6 +1,8 @@
 {
   "name": "smoke",
   "version": 1,
+  "requires_device_unlocked": true,
+  "device_start_hints": ["app-foreground-or-launchable", "logged-in-home-or-assets-visible"],
   "steps": [
     {
       "name": "initial_screen_responsive",

@@ -2,6 +2,8 @@
   "name": "login-dev",
   "version": 1,
   "side_effects": "auth-only",
+  "requires_device_unlocked": true,
+  "device_start_hints": ["logged-out-or-login-entry-visible"],
   "steps": [
     {"name": "open_login_entry", "action": "tap", "selector": {"desc": "login-entry", "text_regex": "登录|Log in|Sign in", "fallback": [1000, 180]}, "snapshot": true, "failure_category": "automation_issue"},
     {"name": "input_username", "action": "input", "env": "OBX_TEST_USERNAME", "selector": {"desc": "login-email-input", "text_regex": "邮箱|Email"}, "failure_category": "environment_blocker"},

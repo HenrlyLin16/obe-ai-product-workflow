@@ -2,6 +2,8 @@
   "name": "watch-monitor-ux-ui",
   "version": 1,
   "purpose": "screenshot-backed watch monitor review",
+  "requires_device_unlocked": true,
+  "device_start_hints": ["logged-in", "kline-route-reachable", "overlay-permission-enabled", "screenshots-required"],
   "steps": [
     {
       "name": "open_home_contract_entry",

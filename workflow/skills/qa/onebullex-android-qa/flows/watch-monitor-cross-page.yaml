@@ -1,6 +1,10 @@
 {
   "name": "watch-monitor-cross-page",
   "version": 1,
+  "requires_device_unlocked": true,
+  "requires_vpn": true,
+  "required_external_apps": ["com.follow.clash"],
+  "device_start_hints": ["logged-in", "kline-route-reachable", "overlay-permission-enabled", "onebullex-home-icon-visible-for-return"],
   "steps": [
     {
       "name": "open_home_contract_entry",
