@@ -12,6 +12,33 @@ Two execution modes are supported:
 - `runtime=codex`: preferred. Use Codex Browser/Chrome plugins as the live execution surface. This is the default for interactive QA and any flow that depends on existing login state.
 - `runtime=playwright`: local runner. Use it for stateless/public-page regression and CLI validation outside Codex plugin execution.
 
+
+## Professional QA Platform Upgrade
+
+This Skill now uses a layered QA model. Read these references before changing flows or execution behavior:
+
+- `references/test-levels.md` — L0/L1/L2/L3/L4 execution boundaries and required metadata.
+- `references/clash-vpn-gate.md` — Mac ClashX Pro VPN gate. VPN is usable only when ClashX Pro is running, `设置为系统代理` is enabled, QA probes generate traffic, and menu-bar traffic is confirmed `>0kb`.
+- `references/test-data-policy.md` — account profile, masking, state residue, and high-risk data rules.
+- `references/oracle-policy.md` — required DOM/API/WS/state/visual/negative oracle coverage.
+- `references/record-replay-policy.md` — Record & Replay quality gate and candidate-only promotion rules.
+- `references/anti-flaky-policy.md` — waiting, retry, failure classification, and minimum evidence rules.
+- `references/github-release-flow.md` — release-readiness and PR checklist for confirmed source changes.
+
+Test levels:
+
+| Level | Scope | Default execution |
+|-------|-------|-------------------|
+| `L0` | Environment health gate | Playwright/iab or dry-run |
+| `L1` | Public smoke and market data | Playwright/iab |
+| `L2` | Login/account/assets/orders state | Codex Chrome |
+| `L3` | Transaction or withdraw dry-run to `safety_gate` | Codex Chrome |
+| `L4` | UX/UI screenshot walkthrough | split by page/viewport |
+
+`all-public` must stay L0+L1. `all-auth` must stay L0+L2+L3 dry-run. UX/UI flows are explicit, not default functional regression.
+
+Record & Replay can be used to capture an expert-demonstrated browser path, but recordings only generate candidates (`flow_seed`, `route_candidate`, `selector_candidate`, `assertion_candidate`, `test_id_request`, or `do_not_promote`). Formal regression still requires route-backed selectors, Flow DSL, oracle metadata, and human-confirmed promotion.
+
 ## Source And Mirrors
 
 - Repo source of truth: `/Users/jingxing/Desktop/Onebullex/workflow/skills/qa/onebullex-web-qa`.
@@ -329,6 +356,17 @@ Chrome/Zentao safety rules:
 | `--skip-health-check` | false | Explicit skip (requires user confirmation) |
 | `--chrome-user-data-dir` | env | `OBX_CHROME_USER_DATA_DIR` |
 | `--chrome-cdp-url` | env | `OBX_CHROME_CDP_URL`, mutually exclusive with userDataDir |
+| `--test-level` | flow | Override/validate flow level `L0`-`L4` |
+| `--risk-level` | flow | Override/report flow risk level |
+| `--vpn-mode` | `off` | `off` / `auto` / `required` Clash VPN gate |
+| `--vpn-app` | `/Applications/ClashX Pro.app` | Clash client path |
+| `--vpn-require-system-proxy` | false | Require macOS system proxy to be enabled |
+| `--vpn-require-traffic` | false | Require current Clash traffic confirmation `>0kb` |
+| `--vpn-failure-policy` | `block` | `block` or `pause_for_manual` |
+| `--record-replay-session` | - | Path to Record & Replay session/events for candidate generation |
+| `--generate-flow-seed-from-recording` | false | Generate recording candidate artifacts without formal promotion |
+| `--recording-label` | - | Human-readable recording label |
+| `--release-readiness-check` | false | Add release-readiness checklist to report |
 
 Credentials: `OBX_TEST_USERNAME` / `OBX_TEST_PASSWORD` (shared with Android QA, never stored in Skill).
 
@@ -348,6 +386,18 @@ In addition to Android QA report sections, Web QA reports include:
 - `## Account State` — expected vs actual profile match
 - `## Cross-Viewport Consistency` — when `--viewport both`
 - `## Page vs Result Verification` — dual verification summary per trading assertion
+
+
+Additional professional QA report sections:
+
+- `## Test Level & Risk` — L0/L1/L2/L3/L4 scope, risk level, side-effect level, oracle types.
+- `## Clash VPN Gate` — Clash app, running state, system proxy, traffic confirmation, HTTP/REST/WS probe status.
+- `## Preconditions` — health, account, VPN, data, and safety gate status.
+- `## Oracle Coverage` — DOM/API/WS/state/visual/negative coverage per flow.
+- `## Route & Selector Stability` — route-backed selectors and fallback/stability notes.
+- `## Flakiness Notes` — sleeps, retries, fallback selectors, inconclusive evidence.
+- `## Evidence Index` — local evidence files grouped by flow and step.
+- `## Release Readiness` — validation and GitHub PR readiness checklist.
 
 ## MVP Flow Catalog (Phase 1)
 

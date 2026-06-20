@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -39,6 +40,10 @@ FLOWS_USED_DIR_NAME = "flows-used"
 ACCOUNT_PROFILES = {"guest", "basic-login", "funded-spot", "funded-futures", "open-orders", "open-position", "withdraw-capable"}
 BROWSER_MODES = {"iab", "chrome", "any"}
 SIDE_EFFECTS = {"none", "auth-only", "blocked-by-default", "testnet-submit", "withdraw-probe-only"}
+SIDE_EFFECT_LEVELS = {"none", "login", "dry_run", "submit", "withdraw"}
+TEST_LEVELS = {"L0", "L1", "L2", "L3", "L4"}
+RISK_LEVELS = {"low", "medium", "high", "critical"}
+ORACLE_TYPES = {"dom", "api", "ws", "state", "visual", "negative"}
 RUNTIMES = {"codex", "playwright"}
 
 
@@ -302,13 +307,23 @@ def _execute_flow_variant(
         "flow": flow_name,
         "base_flow": str(flow.get("name") or flow_path.stem),
         "path": str(flow_path),
+        "test_level": args.test_level or flow.get("test_level", "L1"),
+        "risk_level": args.risk_level or flow.get("risk_level", "low"),
+        "required_runtime": flow.get("required_runtime", args.runtime),
         "browser_mode": browser_mode,
         "viewport": viewport,
         "locale": locale,
         "required_account_profile": flow.get("required_account_profile", "guest"),
         "required_start_state": flow.get("required_start_state", ""),
         "requires_health_gate": bool(flow.get("requires_health_gate", False)),
+        "requires_clash_vpn": bool(flow.get("requires_clash_vpn", False)),
+        "requires_system_proxy": bool(flow.get("requires_system_proxy", False)),
+        "requires_traffic_gt_0kb": bool(flow.get("requires_traffic_gt_0kb", False)),
+        "oracle_type": flow.get("oracle_type", []),
         "side_effects": flow.get("side_effects", "none"),
+        "side_effect_level": flow.get("side_effect_level", "none"),
+        "recording_seeded": bool(flow.get("recording_seeded", False)),
+        "manual_oracle_required": bool(flow.get("manual_oracle_required", False)),
         "public_only": bool(flow.get("public_only", False)),
     }
     return results, metadata
@@ -393,10 +408,107 @@ def learning_candidates(env: dict[str, Any], results: list[StepResult], flow_rec
     return candidates
 
 
-def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], results: list[StepResult], flow_paths: list[Path], flow_metadata: list[dict[str, Any]]) -> tuple[Path, Path]:
+
+def run_subprocess(cmd: list[str], cwd: Path | None = None) -> dict[str, Any]:
+    proc = subprocess.run(cmd, cwd=str(cwd) if cwd else None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
+    return {"cmd": cmd, "exit_code": proc.returncode, "output": proc.stdout.strip()[:4000]}
+
+
+def run_clash_gate_if_needed(args: argparse.Namespace, out_dir: Path, flow_paths: list[Path]) -> dict[str, Any]:
+    flows = [load_yaml(path) for path in flow_paths]
+    flow_requires = any(bool(flow.get("requires_clash_vpn")) for flow in flows)
+    if args.vpn_mode == "off" or (args.vpn_mode == "auto" and not flow_requires):
+        return {"status": "skipped", "reason": "vpn_mode_off_or_not_required", "checks": []}
+    output = out_dir / "clash-vpn-gate.json"
+    cmd = [
+        sys.executable,
+        str(SCRIPT_DIR / "clash_vpn_gate.py"),
+        "--vpn-mode",
+        args.vpn_mode,
+        "--vpn-app",
+        args.vpn_app,
+        "--base-url",
+        args.base_url,
+        "--output",
+        str(output),
+        "--failure-policy",
+        args.vpn_failure_policy,
+    ]
+    if args.dry_run:
+        cmd.append("--dry-run")
+    if args.vpn_require_system_proxy:
+        cmd.append("--require-system-proxy")
+    if args.vpn_require_traffic:
+        cmd.append("--require-traffic")
+    if args.vpn_traffic_confirmed:
+        cmd.append("--traffic-confirmed")
+    result = run_subprocess(cmd)
+    if output.exists():
+        payload = json.loads(output.read_text(encoding="utf-8"))
+    else:
+        payload = {"status": "environment_blocker", "checks": [], "error": result.get("output", "clash gate did not write output")}
+    payload["command_exit"] = result["exit_code"]
+    payload["artifact"] = str(output)
+    return payload
+
+
+def generate_recording_candidates_if_requested(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
+    if not args.record_replay_session:
+        return {"status": "not_requested"}
+    session = Path(args.record_replay_session).expanduser()
+    events = session
+    metadata = ""
+    if session.is_dir():
+        for candidate in ("events.jsonl", "events.ndjson"):
+            if (session / candidate).exists():
+                events = session / candidate
+                break
+        for candidate in ("session.json", "metadata.json"):
+            if (session / candidate).exists():
+                metadata = str(session / candidate)
+                break
+    if not events.exists():
+        return {"status": "missing_events", "path": str(events)}
+    rec_dir = out_dir / "record-and-replay-candidates"
+    cmd = [sys.executable, str(SCRIPT_DIR / "recording_to_qa_candidates.py"), "--events", str(events), "--out-dir", str(rec_dir), "--label", args.recording_label or "recorded-web-flow"]
+    if metadata:
+        cmd.extend(["--metadata", metadata])
+    result = run_subprocess(cmd)
+    return {"status": "generated" if (rec_dir / "recording-candidates.json").exists() else "failed", "artifact_dir": str(rec_dir), "command_exit": result["exit_code"], "output": result["output"]}
+
+
+def build_release_readiness(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
+    if not args.release_readiness_check:
+        return {"status": "not_requested"}
+    output = out_dir / "release-readiness.json"
+    cmd = [sys.executable, str(SCRIPT_DIR / "release_readiness.py"), "--output", str(output)]
+    result = run_subprocess(cmd)
+    if output.exists():
+        payload = json.loads(output.read_text(encoding="utf-8"))
+    else:
+        payload = {"overall": "not_ready", "checks": [], "error": result.get("output", "release readiness did not write output")}
+    payload["artifact"] = str(output)
+    payload["command_exit"] = result["exit_code"]
+    return payload
+
+
+def collect_oracle_coverage(flow_metadata: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for meta in flow_metadata:
+        oracle = meta.get("oracle_type") or []
+        if isinstance(oracle, str):
+            oracle = [oracle]
+        for item in oracle:
+            counts[str(item)] = counts.get(str(item), 0) + 1
+    return counts
+
+def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], results: list[StepResult], flow_paths: list[Path], flow_metadata: list[dict[str, Any]], clash_gate: dict[str, Any] | None = None, recording: dict[str, Any] | None = None, release_readiness: dict[str, Any] | None = None) -> tuple[Path, Path]:
     counts = {s: sum(1 for r in results if r.status == s) for s in ["pass", "fail", "blocked"]}
     flow_records = snapshot_flows_used(out_dir, flow_paths)
-    report_json = {"generated": dt.datetime.now().isoformat(timespec="seconds"), "environment": env, "setup_notes": setup_notes, "summary": counts, "flow_metadata": flow_metadata, "flows_used": flow_records, "results": [r.to_dict() for r in results]}
+    clash_gate = clash_gate or {"status": "not_requested", "checks": []}
+    recording = recording or {"status": "not_requested"}
+    release_readiness = release_readiness or {"status": "not_requested"}
+    report_json = {"generated": dt.datetime.now().isoformat(timespec="seconds"), "environment": env, "setup_notes": setup_notes, "summary": counts, "flow_metadata": flow_metadata, "oracle_coverage": collect_oracle_coverage(flow_metadata), "clash_vpn_gate": clash_gate, "record_and_replay": recording, "release_readiness": release_readiness, "flows_used": flow_records, "results": [r.to_dict() for r in results]}
     candidates = learning_candidates(env, results, flow_records)
     cand_path = out_dir / OPTIMIZATION_CANDIDATES_NAME
     confirm_path = out_dir / OPTIMIZATION_CONFIRM_NAME
@@ -415,17 +527,74 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
     lines = ["# OneBullEx Web QA Report\n", f"- Generated: {report_json['generated']}\n", f"- Evidence directory: `{out_dir}`\n", f"- Summary: {counts.get('pass',0)} pass, {counts.get('fail',0)} fail, {counts.get('blocked',0)} blocked\n", f"- Report JSON: `{json_path}`\n", "\n## Environment\n"]
     for k, v in env.items():
         lines.append(f"- {k}: `{v}`\n")
+
+    levels = sorted({str(m.get("test_level", "")) for m in flow_metadata if m.get("test_level")})
+    risks = sorted({str(m.get("risk_level", "")) for m in flow_metadata if m.get("risk_level")})
+    side_levels = sorted({str(m.get("side_effect_level", "")) for m in flow_metadata if m.get("side_effect_level")})
+    lines.append("\n## Test Level & Risk\n")
+    lines.append(f"- Test levels: `{', '.join(levels) or 'unknown'}`\n")
+    lines.append(f"- Risk levels: `{', '.join(risks) or 'unknown'}`\n")
+    lines.append(f"- Side-effect levels: `{', '.join(side_levels) or 'unknown'}`\n")
+
+    lines.append("\n## Clash VPN Gate\n")
+    lines.append(f"- Status: `{clash_gate.get('status', 'not_requested')}`\n")
+    if clash_gate.get("artifact"):
+        lines.append(f"- Artifact: `{clash_gate.get('artifact')}`\n")
+    for check in clash_gate.get("checks", [])[:12]:
+        lines.append(f"- {check.get('name')}: `{check.get('status')}` {check.get('summary', '')}\n")
+
+    lines.append("\n## Preconditions\n")
+    lines.append(f"- Account profile requested: `{env.get('account_profile')}`\n")
+    lines.append(f"- Health check skipped: `{env.get('skip_health_check')}`\n")
+    lines.append(f"- Confirm submit: `{env.get('confirm_submit')}`\n")
+    lines.append(f"- Allow withdraw: `{env.get('allow_withdraw')}`\n")
+
+    lines.append("\n## Oracle Coverage\n")
+    if report_json["oracle_coverage"]:
+        for oracle, count in sorted(report_json["oracle_coverage"].items()):
+            lines.append(f"- {oracle}: {count} flow variant(s)\n")
+    else:
+        lines.append("- No oracle metadata declared.\n")
+
+    lines.append("\n## Route & Selector Stability\n")
+    fallback_count = sum(1 for r in results if r.fallback or (r.selector and r.selector.get("fallback_xy")))
+    lines.append(f"- Coordinate/fallback selector hits: `{fallback_count}`\n")
+    lines.append("- Route-backed selectors are preferred; fallback selectors should produce learning candidates.\n")
+
+    lines.append("\n## Flakiness Notes\n")
+    sleep_steps = sum(1 for r in results if r.action == "sleep")
+    lines.append(f"- Fixed sleep steps observed: `{sleep_steps}`\n")
+    lines.append("- Product assertions are not retried by default; environment gates may use light retry.\n")
+
+    lines.append("\n## Evidence Index\n")
+    for rec in flow_records:
+        lines.append(f"- `{rec['flow']}`: snapshot `{rec['snapshot_path']}`\n")
+
+    lines.append("\n## Record & Replay Source\n")
+    lines.append(f"- Status: `{recording.get('status', 'not_requested')}`\n")
+    if recording.get("artifact_dir"):
+        lines.append(f"- Candidate artifacts: `{recording.get('artifact_dir')}`\n")
+
     lines.append("\n## Setup Notes\n")
     for note in setup_notes:
         lines.append(f"- {note}\n")
+
     lines.append("\n## Test Matrix\n| Flow | Step | Action | Status | Category | Notes | Evidence |\n| --- | --- | --- | --- | --- | --- | --- |\n")
     for r in results:
         ev = " ".join(f"[{k}]({Path(v).as_posix()})" for k, v in r.evidence.items())
         notes = "<br>".join(n.replace("|", "\\|") for n in r.notes[:3])
         lines.append(f"| {r.flow} | {r.step} | {r.action} | {r.status} | {r.category or '-'} | {notes} | {ev} |\n")
+
     lines.append("\n## Page vs Result Verification\n- Trading flows must pair page-state evidence with order/position/history/balance result-state evidence before product conclusions are trusted.\n")
     lines.append("\n## Suspected Bugs For Human Review\n")
     lines.append(f"- Product bug candidates are written to `{out_dir / BUG_TEMPLATE_NAME}` and require manual confirmation.\n")
+
+    lines.append("\n## Release Readiness\n")
+    lines.append(f"- Status: `{release_readiness.get('overall', release_readiness.get('status', 'not_requested'))}`\n")
+    if release_readiness.get("artifact"):
+        lines.append(f"- Artifact: `{release_readiness.get('artifact')}`\n")
+    lines.append("- Default PR branch prefix: `codex/onebullex-web-qa-*`\n")
+
     lines.append("\n## Skill Learning Review\n")
     for label, path in report_json["learning_artifacts"].items():
         lines.append(f"- {label}: `{path}`\n")
@@ -459,6 +628,19 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--requirement-fetch-status", default="")
     p.add_argument("--requirement-execution-mode", default="")
     p.add_argument("--start-url", default="")
+    p.add_argument("--test-level", choices=sorted(TEST_LEVELS))
+    p.add_argument("--risk-level", choices=sorted(RISK_LEVELS))
+    p.add_argument("--vpn-mode", choices=["off", "auto", "required"], default="off")
+    p.add_argument("--vpn-app", default="/Applications/ClashX Pro.app")
+    p.add_argument("--vpn-require-system-proxy", action="store_true")
+    p.add_argument("--vpn-require-traffic", action="store_true")
+    p.add_argument("--vpn-traffic-confirmed", action="store_true")
+    p.add_argument("--vpn-failure-policy", choices=["block", "pause_for_manual"], default="block")
+    p.add_argument("--skip-vpn-check", action="store_true")
+    p.add_argument("--record-replay-session", default="")
+    p.add_argument("--generate-flow-seed-from-recording", action="store_true")
+    p.add_argument("--recording-label", default="")
+    p.add_argument("--release-readiness-check", action="store_true")
     return p.parse_args()
 
 
@@ -479,6 +661,10 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     flow_arg = "env-health-check.yaml" if args.health_check_only else args.flow
     flow_paths = resolve_flows(flow_arg)
+    clash_gate = {"status": "skipped", "reason": "skip_vpn_check"} if args.skip_vpn_check else run_clash_gate_if_needed(args, out_dir, flow_paths)
+    if clash_gate.get("status") == "environment_blocker" and args.vpn_failure_policy == "block" and not args.dry_run:
+        raise FlowError("Clash VPN gate blocked execution; use --vpn-failure-policy pause_for_manual or fix Clash/system proxy/traffic.")
+    recording = generate_recording_candidates_if_requested(args, out_dir) if args.generate_flow_seed_from_recording or args.record_replay_session else {"status": "not_requested"}
     all_results: list[StepResult] = []
     metadata: list[dict[str, Any]] = []
     for path in flow_paths:
@@ -497,6 +683,12 @@ def main() -> int:
         "side_effects": "allowed" if args.allow_side_effects else "none",
         "confirm_submit": args.confirm_submit,
         "allow_withdraw": args.allow_withdraw,
+        "skip_health_check": args.skip_health_check,
+        "vpn_mode": args.vpn_mode,
+        "vpn_app": args.vpn_app,
+        "vpn_require_system_proxy": args.vpn_require_system_proxy,
+        "vpn_require_traffic": args.vpn_require_traffic,
+        "skip_vpn_check": args.skip_vpn_check,
         "chrome_account_hint": args.chrome_account_hint,
         "requirement_doc": args.requirement_doc,
         "requirement_fetch_status": args.requirement_fetch_status,
@@ -509,7 +701,8 @@ def main() -> int:
         if args.dry_run
         else f"Live runtime: {args.runtime}. Public/stateless flows may execute locally only when runtime=playwright."
     ]
-    md_path, _ = write_reports(out_dir, env, setup_notes, all_results, flow_paths, metadata)
+    release_readiness = build_release_readiness(args, out_dir)
+    md_path, _ = write_reports(out_dir, env, setup_notes, all_results, flow_paths, metadata, clash_gate=clash_gate, recording=recording, release_readiness=release_readiness)
     print(f"Report: {md_path}")
     print(f"Bug template: {out_dir / BUG_TEMPLATE_NAME}")
     return 0

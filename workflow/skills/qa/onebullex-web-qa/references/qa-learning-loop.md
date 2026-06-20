@@ -41,3 +41,20 @@ scripts/sync-onebullex-web-qa-skill.sh
 ```
 
 Codex and Cursor directories are generated mirrors. Edit the repo source under `workflow/skills/qa/onebullex-web-qa`, then sync.
+
+## Record & Replay Candidate Promotion
+
+Record & Replay outputs are candidate-only. Promote only human-confirmed items from:
+
+- `qa-recording-summary.md`
+- `flow-seed-candidates/`
+- `route-seed-candidates/`
+- `selector-hardening-candidates.json`
+- `assertion-candidates.json`
+- `test-id-requests.md`
+
+Do not promote raw recordings, sensitive event payloads, one-off network/VPN behavior, or manual-only observations without a stable oracle.
+
+## Professional QA Learning Types
+
+Valid Skill learnings include test-level metadata corrections, oracle coverage fixes, route/selector hardening, anti-flaky waiting improvements, Clash gate documentation, and release-readiness gaps. Product bugs remain in `confirmed-bugs.template.json`.

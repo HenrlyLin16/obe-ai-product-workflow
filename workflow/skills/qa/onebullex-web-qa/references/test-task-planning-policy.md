@@ -39,3 +39,15 @@ A plan for a new test task must include:
 ## Confirmation Rule
 
 Do not execute the planned automation until the user explicitly confirms with wording such as `继续`, `执行`, `确认执行`, `PLEASE IMPLEMENT THIS PLAN`, or an equivalent direct approval. If the user only asks for opinions or refinements, keep iterating on the plan.
+
+## Professional QA Plan Additions
+
+New test plans must include:
+
+- Test level (`L0`-`L4`) and risk level.
+- Required oracle types: DOM, API, WS, state, visual, negative.
+- Whether Mac ClashX Pro VPN is required, and how traffic `>0kb` will be confirmed.
+- Account profile, masked test-data assumptions, and cleanup/residue policy.
+- Whether Record & Replay is needed for exploration; recordings produce candidates only.
+- Whether Futures/risk formulas require `cex-contract-testing-expert` before Web execution.
+- Release-readiness expectations if Skill source changes will be committed.
