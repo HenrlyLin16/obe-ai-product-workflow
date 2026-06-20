@@ -1,6 +1,8 @@
 {
   "name": "watch-monitor-manage-list",
   "version": 1,
+  "requires_device_unlocked": true,
+  "device_start_hints": ["logged-in", "kline-route-reachable", "overlay-permission-enabled"],
   "steps": [
     {
       "name": "open_home_contract_entry",

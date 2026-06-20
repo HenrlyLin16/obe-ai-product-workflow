@@ -6,13 +6,14 @@ Use this reference when editing or extending `onebullex-android-qa-report.md`.
 
 1. `# OneBullEx Android QA Report`
 2. Generated time, evidence directory, and pass/fail/blocked summary.
-3. `## Environment`: device serial, model, Android version if available, channel, package, activity, screen size, density, and foreground app signal.
+3. `## Environment`: device serial, model, Android version if available, channel, package, activity, screen size, density, foreground app signal, and ADB stable-recognition fields.
 4. `## APK Version Gate`: status, device version, remote version, APK URL when known, and recommended action.
-5. `## Setup Notes`: adb connection mode, app launch result, package gate result, and any requirement source such as Lark URL.
+5. `## Setup Notes`: adb connection mode, stability gate result, app launch result, package gate result, VPN/device-control actions, and any requirement source such as Lark URL.
 6. `## Test Matrix`: one row per step with status, notes, screenshot, UI summary, and log link.
 7. `## Suspected Bugs For Human Review`: tells the user to mark `confirmed: true` in `confirmed-bugs.template.json`.
 8. For requirement-specific runs such as `实时盯盘浮窗`, add a short summary covering requirement source, package-gate exception, executed watch-monitor flows, overlay findings, and selector fallback risks.
-9. `## Skill Learning Review`: links to `qa-experience-summary.md`, `qa-skill-optimization-candidates.json`, `qa-skill-optimization-confirm.template.json`, and `flows-used/`.
+9. `## Skill Learning Review`: links to `qa-experience-summary.md`, `qa-skill-optimization-candidates.json`, `qa-skill-optimization-confirm.template.json`, `flows-used/`, and any Record & Replay seed artifacts produced for the run.
+10. `## GitHub Release Suggestions`: describe the recommended branch/PR scope once human-confirmed learnings are ready to publish.
 
 ## Status Meaning
 
@@ -25,11 +26,14 @@ Use this reference when editing or extending `onebullex-android-qa-report.md`.
 
 - Keep evidence paths exact and local; do not copy large logs into the report.
 - Separate product defects from setup blockers.
+- For ADB stability, record the final `adb devices -l` snapshot or its JSON summary rather than paraphrasing from memory.
+- If VPN or external-app switching was required, state whether it was automatic, partial, or manual.
 - For sorting checks, include the observed first rows and detected order when available.
 - For suspected bugs, use the structure `[步骤] / [结果] / [期望]` so it can be copied into Zentao.
 - Avoid filing a bug solely because a parser could not infer the screen; include screenshots/XML for manual review instead.
 - Do not file product bugs from stale, missing, or unknown APK status. Record those as environment blockers.
 - Do not silently optimize the Skill from a run. Generate learning artifacts first, then require human confirmation.
+- If Record & Replay was used, explicitly state that generated seeds are exploratory and whether sensitive content was redacted.
 
 ## Human Confirmation Checklist
 

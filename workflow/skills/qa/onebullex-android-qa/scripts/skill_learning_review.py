@@ -15,6 +15,7 @@ CONFIRM_NAME = "qa-skill-optimization-confirm.template.json"
 CANDIDATES_NAME = "qa-skill-optimization-candidates.json"
 PATCH_NAME = "qa-skill-optimization-confirmed.patch.md"
 AUDIT_REL = Path("references") / "qa-learning-audit.md"
+RELEASE_SUMMARY_NAME = "qa-github-release-summary.md"
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,6 +90,33 @@ def append_audit(source_skill_dir: Path, evidence_dir: Path, source_path: Path, 
     return audit_path
 
 
+def write_release_summary(evidence_dir: Path, confirmed: list[dict[str, Any]]) -> Path:
+    summary_path = evidence_dir / RELEASE_SUMMARY_NAME
+    lines = [
+        "# QA GitHub Release Summary\n",
+        f"- Evidence directory: `{evidence_dir}`\n",
+        f"- Confirmed learning items: {len(confirmed)}\n",
+        "\n## Proposed Branch\n",
+        "- `codex/onebullex-android-qa-learning-loop`\n",
+        "\n## Suggested Commit Scope\n",
+        "- `workflow/skills/qa/onebullex-android-qa/**`\n",
+        "- `scripts/sync-onebullex-android-qa-skill.sh`\n",
+        "\n## PR Notes\n",
+        "- Summarize ADB stability gate updates.\n",
+        "- Summarize Android device control and VPN behavior.\n",
+        "- Summarize Record & Replay seed workflow additions.\n",
+        "- Link the local QA report and learning summary.\n",
+        "\n## Confirmed Learning Items\n",
+    ]
+    if not confirmed:
+        lines.append("- No confirmed learning items yet.\n")
+    else:
+        for item in confirmed:
+            lines.append(f"- `{item.get('type', '')}` {item.get('title', '')} -> {item.get('target', '')}\n")
+    summary_path.write_text("".join(lines), encoding="utf-8")
+    return summary_path
+
+
 def main() -> int:
     args = parse_args()
     evidence_dir = Path(args.evidence_dir).expanduser().resolve()
@@ -101,7 +129,9 @@ def main() -> int:
 
     if args.write_skill:
         audit_path = append_audit(Path(args.source_skill_dir).expanduser().resolve(), evidence_dir, source_path, confirmed)
+        release_summary = write_release_summary(evidence_dir, confirmed)
         print(f"Skill audit updated: {audit_path}")
+        print(f"GitHub release summary: {release_summary}")
         print("Next: run scripts/sync-onebullex-android-qa-skill.sh from the repo root.")
     elif args.apply_confirmed:
         print("No Skill files were modified. Review the patch file before passing --write-skill.")

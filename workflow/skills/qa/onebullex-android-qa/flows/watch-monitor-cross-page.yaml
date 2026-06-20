@@ -1,57 +1,15 @@
 {
   "name": "watch-monitor-cross-page",
   "version": 1,
+  "requires_device_unlocked": true,
+  "requires_vpn": true,
+  "required_external_apps": ["com.follow.clash"],
+  "device_start_hints": ["logged-in", "watch-monitor-already-enabled", "overlay-permission-enabled"],
   "steps": [
     {
-      "name": "open_home_contract_entry",
-      "action": "tap",
-      "selector": {
-        "text": "合约",
-        "fallback": [600, 2510]
-      },
-      "wait": 1.8,
-      "snapshot": true,
-      "failure_category": "environment_blocker"
-    },
-    {
-      "name": "assert_contract_page",
-      "action": "assert_text",
-      "all": ["开仓", "平仓", "K线图"],
-      "snapshot": true,
-      "failure_category": "environment_blocker"
-    },
-    {
-      "name": "open_kline_page",
-      "action": "tap",
-      "selector": {
-        "text": "K线图",
-        "fallback": [1002, 212]
-      },
-      "snapshot": true,
-      "failure_category": "automation_issue"
-    },
-    {
-      "name": "open_settings_sheet",
-      "action": "tap",
-      "selector": {
-        "desc": "设置",
-        "text": "设置",
-        "fallback": [1133, 682]
-      },
-      "snapshot": true,
-      "failure_category": "automation_issue"
-    },
-    {
-      "name": "open_watch_monitor_page",
-      "action": "tap_xy",
-      "coordinate": [600, 2325],
-      "snapshot": true,
-      "failure_category": "automation_issue"
-    },
-    {
-      "name": "cross_page_start",
+      "name": "current_app_overlay_checkpoint",
       "action": "ux_snapshot",
-      "label": "watch-monitor-before-cross-page",
+      "label": "watch-monitor-current-app-overlay",
       "snapshot": true,
       "failure_category": "environment_blocker"
     },
@@ -71,14 +29,33 @@
       "failure_category": "requirement_unclear"
     },
     {
-      "name": "reopen_onebullex",
-      "action": "tap",
-      "selector": {
-        "text": "OneBullEx (dev)",
-        "fallback": [456, 1619]
-      },
+      "name": "open_vpn_app",
+      "action": "open_external_app",
+      "package": "com.follow.clash",
       "snapshot": true,
       "failure_category": "automation_issue"
+    },
+    {
+      "name": "vpn_overlay_checkpoint",
+      "action": "ux_snapshot",
+      "label": "watch-monitor-vpn-overlay",
+      "snapshot": true,
+      "continue_on_failure": true,
+      "failure_category": "requirement_unclear"
+    },
+    {
+      "name": "relaunch_onebullex",
+      "action": "launch_app",
+      "package": "com.onemore.onebullex.dev",
+      "activity": "com.icy.neptune.MainActivity",
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_onebullex_foreground",
+      "action": "ensure_foreground",
+      "package": "com.onemore.onebullex.dev",
+      "failure_category": "environment_blocker"
     },
     {
       "name": "return_to_app_checkpoint",

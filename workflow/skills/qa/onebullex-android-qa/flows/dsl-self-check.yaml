@@ -1,6 +1,9 @@
 {
   "name": "dsl-self-check",
   "version": 1,
+  "requires_device_unlocked": true,
+  "recording_seeded": true,
+  "device_start_hints": ["watch-monitor-path-partially-reachable"],
   "inputs": {
     "expected_entry": {
       "default": "实时盯盘浮窗"

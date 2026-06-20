@@ -28,9 +28,13 @@ A plan for a new test task must include:
 - Test objective and requirement source, including Lark/PRD URL or pasted scope when available.
 - Target channel: `dev` by default, `prod` only after explicit user selection.
 - Package gate strategy: version check command, expected package name, and install confirmation policy.
-- Device assumptions: serial, lock state, network, login state, and whether USB or Wi-Fi adb is used.
+- Device assumptions: serial, lock state, network, login state, whether USB or Wi-Fi adb is used, and how `adb devices -l` stability will be checked.
+- Device control assumptions: whether the task needs home-screen reset, external app switching, overlay permission handling, notification shade, or Android system dialog handling.
+- Record & Replay usage: whether the task needs a demonstration recording, how recording outputs will be converted into seeds, and which parts still require manual selector hardening.
+- VPN strategy: whether the flow requires VPN, which package will be used, whether the last-used node/config is acceptable, and what to do if automatic connection fails.
 - Flows to run or create, with rough step list and selector discovery strategy.
 - Evidence and reports: evidence directory, Markdown report, JSON report, UX report if needed.
+- Release target: whether confirmed improvements should remain local, sync only to mirrors, or be prepared for a GitHub branch + PR.
 - Risk controls: side effects, login credentials, trading confirmation, production restrictions.
 - Acceptance criteria and known blockers.
 

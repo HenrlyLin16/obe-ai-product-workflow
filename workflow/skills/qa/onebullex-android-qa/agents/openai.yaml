@@ -1,4 +1,4 @@
 interface:
   display_name: "OneBullEx Android QA"
-  short_description: "Plan-first Android QA with APK gates"
-  default_prompt: "Use $onebullex-android-qa. For new OneBullEx Android requirements, start with a test plan; before real-device execution, check the latest APK gate, then run flows, produce a report, and review the generated QA learning artifacts before optimizing the Skill. Treat the repo source as canonical and sync Codex/Cursor mirrors after confirmed changes."
+  short_description: "Plan-first Android QA with ADB/VPN/recording gates"
+  default_prompt: "Use $onebullex-android-qa. For new OneBullEx Android requirements, start with a test plan; before real-device execution, pass the adb stable-recognition gate, check the latest APK gate, prepare device control and optional FIClash VPN if needed, then run selector-based flows, produce reports, review QA learning artifacts and any Record & Replay seeds, and only after confirmation sync mirrors and prepare the GitHub branch/PR release flow."

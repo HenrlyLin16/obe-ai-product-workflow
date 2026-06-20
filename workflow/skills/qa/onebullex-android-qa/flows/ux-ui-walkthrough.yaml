@@ -2,6 +2,8 @@
   "name": "ux-ui-walkthrough",
   "version": 1,
   "purpose": "screenshot-backed UX/UI review",
+  "requires_device_unlocked": true,
+  "device_start_hints": ["onebullex-launchable", "screenshots-required"],
   "steps": [
     {
       "name": "ux_initial_screen",

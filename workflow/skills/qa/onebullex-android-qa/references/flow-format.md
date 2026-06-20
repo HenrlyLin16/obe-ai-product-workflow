@@ -7,6 +7,11 @@ Flows live in `flows/*.yaml` and are executed by `scripts/flow_runner.py`.
 - `name`: stable flow id, for example `market-sort`.
 - `version`: flow schema version, currently `1`.
 - `side_effects`: optional marker such as `none`, `auth-only`, or `blocked-by-default`.
+- `requires_vpn`: optional boolean. When true, runner ensures VPN is connected before execution unless the user explicitly disables VPN checks.
+- `requires_device_unlocked`: optional boolean. Use for flows that assume the device is already unlocked and interactive.
+- `required_external_apps`: optional list of packages that may be opened during the flow, for example `com.follow.clash`.
+- `device_start_hints`: optional list of preconditions such as `home-screen`, `logged-in`, or `overlay-permission-enabled`.
+- `recording_seeded`: optional boolean. Mark true when the flow originated from Record & Replay exploration and still needs selector/route hardening review.
 - `inputs`: optional input contract. Values are passed with `--input key=value` and referenced as `{{ inputs.key }}`.
 - `steps`: ordered list of actions.
 
@@ -28,6 +33,16 @@ Flows live in `flows/*.yaml` and are executed by `scripts/flow_runner.py`.
 - `branch`: match the first visible selector and execute nested `then` steps.
 - `log`: add a note to the report.
 - `safety_gate`: stop side-effectful flows unless the user explicitly allowed them.
+- `launch_app`: launch a package or package/activity pair.
+- `open_external_app`: open an external Android app, such as FIClash.
+- `ensure_foreground`: assert that the foreground app contains the expected package name.
+- `handle_system_dialog`: dismiss a narrow set of system confirmation buttons such as VPN permission prompts.
+- `home`: send Android home.
+- `back`: send Android back.
+- `recent_apps`: open the recent-apps switcher.
+- `open_notification_shade`: expand the notification shade.
+- `open_quick_settings`: expand Quick Settings.
+- `ensure_vpn`: require VPN connectivity inside the flow.
 
 The runner accepts both OneBullEx action-style steps and the shorter
 `ui-automation-flow` style:
@@ -96,6 +111,15 @@ Rules:
 - Flow-local `selector` or `coordinate` values override the route entry.
 - Coordinate fallback via a route is still fallback; the learning loop records a `route_update` candidate so the route can later be hardened with a stable Android automation ID.
 - Keep route files JSON-compatible unless the local Python environment has PyYAML available.
+
+## Record & Replay Seeded Flows
+
+When a new path is first explored with Record & Replay:
+
+- Generate exploratory seeds with `scripts/record_replay_flow_seed.py`.
+- Mark draft flows with `recording_seeded: true`.
+- Convert recorded hints into stable `route` references and selector-based steps before treating the flow as reusable regression coverage.
+- Never copy passwords, OTPs, secrets, or account-private data from a recording into `flows/*.yaml`.
 
 ## Branch example
 

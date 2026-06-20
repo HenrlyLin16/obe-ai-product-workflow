@@ -1,6 +1,8 @@
 {
   "name": "market-sort",
   "version": 1,
+  "requires_device_unlocked": true,
+  "device_start_hints": ["onebullex-launchable", "market-tab-reachable"],
   "steps": [
     {
       "name": "open_market_tab",

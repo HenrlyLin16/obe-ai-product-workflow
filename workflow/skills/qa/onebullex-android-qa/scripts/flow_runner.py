@@ -27,6 +27,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from ui_driver import AdbDevice, DriverError, UIDriver, choose_serial, require_adb, summarize_xml, text_values, label_values, parse_nodes
+from android_device_controller import ensure_adb_stable, foreground_app, launch_app, open_package, prepare_device_state
+from vpn_driver import DEFAULT_VPN_PACKAGE, ensure_vpn
 
 DEFAULT_PACKAGE = "com.onemore.onebullex.dev"
 CHANNEL_TO_PACKAGE = {
@@ -45,6 +47,7 @@ SKILL_DIR = SCRIPT_DIR.parent
 FLOWS_DIR = SKILL_DIR / "flows"
 ROUTES_DIR = SKILL_DIR / "routes"
 APK_VERSION_GUARD = SCRIPT_DIR / "apk_version_guard.py"
+RECORD_REPLAY_FLOW_SEED = SCRIPT_DIR / "record_replay_flow_seed.py"
 
 
 @dataclass
@@ -88,6 +91,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("flow", nargs="?", default="all", help="Flow path/name or all.")
     p.add_argument("--serial", default=os.environ.get("ADB_SERIAL"))
     p.add_argument("--wireless")
+    p.add_argument("--device-discovery-mode", choices=["usb", "wifi", "auto"], default="auto")
+    p.add_argument("--adb-stability-check", action="store_true")
+    p.add_argument("--adb-stability-retries", type=int, default=3)
+    p.add_argument("--adb-stability-interval-ms", type=int, default=800)
     p.add_argument("--channel", choices=["dev", "prod"], default="dev")
     p.add_argument("--package")
     p.add_argument("--activity", default=DEFAULT_ACTIVITY)
@@ -104,6 +111,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--force-stop-before-launch", action="store_true")
     p.add_argument("--evidence-level", choices=["minimal", "normal", "full"], default="normal")
     p.add_argument("--no-launch", action="store_true")
+    p.add_argument("--vpn-mode", choices=["off", "auto", "required"], default="auto")
+    p.add_argument("--vpn-package", default=DEFAULT_VPN_PACKAGE)
+    p.add_argument("--vpn-target-mode", default="reuse_last")
+    p.add_argument("--vpn-failure-policy", default="pause_for_manual")
+    p.add_argument("--skip-vpn-check", action="store_true")
+    p.add_argument("--device-control-profile", choices=["default", "overlay", "download-install"], default="default")
+    p.add_argument("--record-replay-session")
+    p.add_argument("--generate-flow-seed-from-recording", action="store_true")
+    p.add_argument("--recording-label")
     p.add_argument("--input", action="append", default=[], metavar="KEY=VALUE", help="Flow input value for {{ inputs.key }} templates.")
     return p.parse_args()
 
@@ -333,27 +349,30 @@ def resolve_flows(flow_arg: str) -> list[Path]:
     return [path]
 
 
-def prepare_device(device: AdbDevice, package: str, activity: str, no_launch: bool, force_stop_before_launch: bool = False) -> list[str]:
-    if device.dry_run:
-        return ["Dry-run mode: skipped adb device mutation and launch."]
-    notes: list[str] = []
-    device.shell("svc", "power", "stayon", "true", check=False)
-    device.shell("cmd", "statusbar", "collapse", check=False)
-    lock_state = str(device.shell("dumpsys", "window", "policy", check=False))
-    if "mInputRestricted=true" in lock_state or "isStatusBarKeyguard=true" in lock_state:
-        raise DriverError("Device appears locked. Unlock the phone before running QA.")
-    resolved = str(device.shell("cmd", "package", "resolve-activity", "--brief", package, check=False)).strip()
-    notes.append(f"Resolved activity: {resolved or 'not reported'}")
-    if not no_launch:
-        if force_stop_before_launch:
-            device.shell("am", "force-stop", package, check=False)
-            time.sleep(0.5)
-            notes.append(f"Force-stopped {package} before launch")
-        component = f"{package}/{activity}"
-        device.shell("am", "start", "-n", component, check=True)
-        time.sleep(1.2)
-        notes.append(f"Launched {component}")
-    return notes
+def maybe_seed_recording(args: argparse.Namespace, out_dir: Path) -> dict[str, str]:
+    if not args.record_replay_session or not args.generate_flow_seed_from_recording:
+        return {}
+    events_path = Path(args.record_replay_session).expanduser()
+    cmd = [
+        sys.executable,
+        str(RECORD_REPLAY_FLOW_SEED),
+        str(events_path),
+        "--out-dir",
+        str(out_dir),
+        "--label",
+        args.recording_label or Path(args.flow).stem,
+    ]
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
+    if proc.returncode != 0:
+        raise DriverError(f"Record & Replay seed generation failed:\n{proc.stdout}")
+    artifacts: dict[str, str] = {}
+    for line in proc.stdout.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip().lower().replace(" ", "_")
+        artifacts[key] = value.strip()
+    return artifacts
 
 
 def run_version_gate(args: argparse.Namespace, serial: str, package: str, out_dir: Path) -> tuple[dict[str, Any] | None, list[str]]:
@@ -423,10 +442,22 @@ def run_version_gate(args: argparse.Namespace, serial: str, package: str, out_di
     return result, notes
 
 
-def collect_environment(device: AdbDevice, channel: str, package: str, activity: str, side_effects: str, version_gate: dict[str, Any] | None = None, requirement_doc: str | None = None, device_start_state: str | None = None) -> dict[str, Any]:
+def collect_environment(
+    device: AdbDevice,
+    channel: str,
+    package: str,
+    activity: str,
+    side_effects: str,
+    version_gate: dict[str, Any] | None = None,
+    requirement_doc: str | None = None,
+    device_start_state: str | None = None,
+    adb_meta: dict[str, Any] | None = None,
+    vpn_meta: dict[str, Any] | None = None,
+    recording_meta: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     version_summary = version_gate or {"status": "not_run"}
     if device.dry_run:
-        return {
+        env = {
             "serial": device.serial,
             "channel": channel,
             "package": package,
@@ -440,7 +471,14 @@ def collect_environment(device: AdbDevice, channel: str, package: str, activity:
             "device_start_state": device_start_state or "",
             "package_gate_exception_accepted": bool(version_summary.get("accepted_risk")),
         }
-    return {
+        if adb_meta:
+            env.update(adb_meta)
+        if vpn_meta:
+            env.update(vpn_meta)
+        if recording_meta:
+            env.update(recording_meta)
+        return env
+    env = {
         "serial": device.serial,
         "channel": channel,
         "package": package,
@@ -449,13 +487,20 @@ def collect_environment(device: AdbDevice, channel: str, package: str, activity:
         "android": str(device.shell("getprop", "ro.build.version.release", check=False)).strip(),
         "wm_size": str(device.shell("wm", "size", check=False)).strip(),
         "wm_density": str(device.shell("wm", "density", check=False)).strip(),
-        "foreground": str(device.shell("dumpsys", "window", "|", "grep", "mCurrentFocus", check=False)).strip(),
+        "foreground": foreground_app(device),
         "side_effects": side_effects,
         "apk_version_gate": version_summary,
         "requirement_doc": requirement_doc or "",
         "device_start_state": device_start_state or "",
         "package_gate_exception_accepted": bool(version_summary.get("accepted_risk")),
     }
+    if adb_meta:
+        env.update(adb_meta)
+    if vpn_meta:
+        env.update(vpn_meta)
+    if recording_meta:
+        env.update(recording_meta)
+    return env
 
 
 def safe_name(value: str) -> str:
@@ -690,6 +735,73 @@ def run_step(driver: UIDriver, flow_name: str, step: dict[str, Any], out_dir: Pa
         elif action == "press_back":
             driver.keyevent("KEYCODE_BACK", wait=float(step.get("settle", step.get("wait", 0.5))))
             notes.append("Pressed Android back.")
+        elif action == "home":
+            driver.keyevent("KEYCODE_HOME", wait=float(step.get("wait", 0.8)))
+            notes.append("Returned to Android home.")
+        elif action == "back":
+            driver.keyevent("KEYCODE_BACK", wait=float(step.get("wait", 0.5)))
+            notes.append("Pressed Android back.")
+        elif action == "recent_apps":
+            driver.keyevent("KEYCODE_APP_SWITCH", wait=float(step.get("wait", 0.8)))
+            notes.append("Opened recent apps.")
+        elif action == "open_notification_shade":
+            if not driver.device.dry_run:
+                driver.device.shell("cmd", "statusbar", "expand-notifications", check=False)
+            time.sleep(0.02 if driver.device.dry_run else float(step.get("wait", 0.8)))
+            notes.append("Opened notification shade.")
+        elif action == "open_quick_settings":
+            if not driver.device.dry_run:
+                driver.device.shell("cmd", "statusbar", "expand-settings", check=False)
+            time.sleep(0.02 if driver.device.dry_run else float(step.get("wait", 0.8)))
+            notes.append("Opened quick settings.")
+        elif action == "launch_app":
+            package_name = str(step.get("package") or "")
+            if not package_name:
+                raise DriverError("launch_app requires package")
+            activity = step.get("activity")
+            notes.extend(launch_app(driver.device, package_name, activity=str(activity) if activity else None, force_stop=bool(step.get("force_stop", False))))
+        elif action == "open_external_app":
+            package_name = str(step.get("package") or "")
+            if not package_name:
+                raise DriverError("open_external_app requires package")
+            notes.extend(open_package(driver.device, package_name))
+        elif action == "ensure_foreground":
+            package_name = str(step.get("package") or "")
+            if not package_name:
+                raise DriverError("ensure_foreground requires package")
+            current = foreground_app(driver.device)
+            if package_name not in current and not driver.device.dry_run:
+                raise DriverError(f"Foreground app mismatch: expected {package_name}, observed {current[:200]}")
+            notes.append(f"Foreground includes {package_name}.")
+        elif action == "handle_system_dialog":
+            targets = step.get("targets") or ["确定", "允许", "OK"]
+            if not isinstance(targets, list):
+                raise DriverError("handle_system_dialog requires list targets")
+            handled = False
+            xml = driver.dump_xml()
+            values = label_values(xml)
+            for target in targets:
+                if target in values:
+                    driver.tap_selector({"text": str(target), "fallback": step.get("fallback") or [900, 1760]}, wait=float(step.get("wait", 0.8)))
+                    handled = True
+                    notes.append(f"Handled system dialog target {target}.")
+                    break
+            if not handled:
+                if step.get("required"):
+                    raise DriverError(f"System dialog target not found: {targets}")
+                notes.append("System dialog target not present; no-op.")
+        elif action == "ensure_vpn":
+            result, vpn_notes = ensure_vpn(
+                driver.device,
+                driver,
+                package=str(step.get("package") or DEFAULT_VPN_PACKAGE),
+                target_mode=str(step.get("target_mode") or "reuse_last"),
+                failure_policy=str(step.get("failure_policy") or "pause_for_manual"),
+                timeout=float(step.get("timeout", 8.0)),
+            )
+            notes.extend(vpn_notes)
+            if result.get("vpn_manual_intervention_required"):
+                raise DriverError("VPN requires manual intervention.")
         elif action == "log":
             notes.append(str(step.get("message", "")))
         elif action == "tap_xy":
@@ -833,11 +945,14 @@ def snapshot_flows_used(out_dir: Path, flow_paths: list[Path]) -> list[dict[str,
             "snapshot_path": str(target),
             "sha256": sha256_file(path),
             "step_count": len(steps) if isinstance(steps, list) else 0,
+            "requires_vpn": bool(flow.get("requires_vpn", False)),
+            "requires_device_unlocked": bool(flow.get("requires_device_unlocked", False)),
+            "recording_seeded": bool(flow.get("recording_seeded", False)),
         })
     return records
 
 
-def build_learning_candidates(env: dict[str, Any], results: list[StepResult], flow_records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def build_learning_candidates(env: dict[str, Any], results: list[StepResult], flow_records: list[dict[str, Any]], recording_artifacts: dict[str, str] | None = None) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
@@ -869,6 +984,13 @@ def build_learning_candidates(env: dict[str, Any], results: list[StepResult], fl
             "If this run produced a stable path, compare the snapshot with the source flow before promoting changes.",
             target=str(record.get("snapshot_path", "")),
         )
+        if record.get("recording_seeded"):
+            add(
+                "recording_seed_review",
+                f"Review recording-seeded flow {record['flow']}",
+                "Replace recorded hints with stable selectors/routes and add real assertions before treating this as a reusable regression flow.",
+                target=str(record.get("snapshot_path", "")),
+            )
 
     for result in results:
         if result.route and (result.fallback == "coordinate" or result.route_stability == "fallback"):
@@ -917,11 +1039,30 @@ def build_learning_candidates(env: dict[str, Any], results: list[StepResult], fl
         "After confirmed source changes are written, run scripts/sync-onebullex-android-qa-skill.sh so Cursor and Codex use the same Skill.",
         target="/Users/jingxing/Desktop/Onebullex/.cursor/skills/onebullex-android-qa",
     )
+    add(
+        "github_release_note",
+        "Prepare GitHub release branch after confirmed Skill updates",
+        "After syncing mirrors and validating scripts, commit only QA Skill files on a codex/onebullex-android-qa-* branch and create a PR with report and learning summary links.",
+        target="references/github-release-flow.md",
+    )
+    if recording_artifacts:
+        add(
+            "recording_artifact_review",
+            "Review Record & Replay seed artifacts",
+            "Use the recording summary, flow seed, route seeds, and selector hardening candidates as exploratory inputs only; confirm them before updating the Skill.",
+            target=recording_artifacts.get("summary", recording_artifacts.get("flow_seed", "")),
+        )
     return candidates
 
 
-def write_learning_artifacts(out_dir: Path, report_json: dict[str, Any], results: list[StepResult], flow_records: list[dict[str, Any]]) -> dict[str, str]:
-    candidates = build_learning_candidates(report_json.get("environment", {}), results, flow_records)
+def write_learning_artifacts(
+    out_dir: Path,
+    report_json: dict[str, Any],
+    results: list[StepResult],
+    flow_records: list[dict[str, Any]],
+    recording_artifacts: dict[str, str] | None = None,
+) -> dict[str, str]:
+    candidates = build_learning_candidates(report_json.get("environment", {}), results, flow_records, recording_artifacts)
     candidates_path = out_dir / OPTIMIZATION_CANDIDATES_NAME
     confirm_path = out_dir / OPTIMIZATION_CONFIRM_NAME
     summary_path = out_dir / EXPERIENCE_SUMMARY_NAME
@@ -976,10 +1117,19 @@ def write_learning_artifacts(out_dir: Path, report_json: dict[str, Any], results
         "optimization_candidates": str(candidates_path),
         "optimization_confirm_template": str(confirm_path),
         "flows_used_dir": str(out_dir / FLOWS_USED_DIR_NAME),
+        "recording_summary": recording_artifacts.get("summary", "") if recording_artifacts else "",
+        "recording_flow_seed": recording_artifacts.get("flow_seed", "") if recording_artifacts else "",
     }
 
 
-def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], results: list[StepResult], flow_paths: list[Path]) -> tuple[Path, Path]:
+def write_reports(
+    out_dir: Path,
+    env: dict[str, Any],
+    setup_notes: list[str],
+    results: list[StepResult],
+    flow_paths: list[Path],
+    recording_artifacts: dict[str, str] | None = None,
+) -> tuple[Path, Path]:
     flat_results = flatten_results(results)
     counts = {s: sum(1 for r in flat_results if r.status == s) for s in ["pass", "fail"]}
     flow_records = snapshot_flows_used(out_dir, flow_paths)
@@ -991,7 +1141,7 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
         "flows_used": flow_records,
         "results": [r.to_dict() for r in flat_results],
     }
-    learning_paths = write_learning_artifacts(out_dir, report_json, flat_results, flow_records)
+    learning_paths = write_learning_artifacts(out_dir, report_json, flat_results, flow_records, recording_artifacts)
     report_json["learning_artifacts"] = learning_paths
     json_path = out_dir / REPORT_JSON_NAME
     json_path.write_text(json.dumps(report_json, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1039,6 +1189,14 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
     lines.append(f"- Optimization candidates: `{learning_paths['optimization_candidates']}`.\n")
     lines.append(f"- Human confirmation template: `{learning_paths['optimization_confirm_template']}`.\n")
     lines.append(f"- Flow snapshots: `{learning_paths['flows_used_dir']}`.\n")
+    if learning_paths.get("recording_summary"):
+        lines.append(f"- Recording summary: `{learning_paths['recording_summary']}`.\n")
+    if learning_paths.get("recording_flow_seed"):
+        lines.append(f"- Recording flow seed: `{learning_paths['recording_flow_seed']}`.\n")
+    lines.append("\n## GitHub Release Suggestions\n")
+    lines.append("- After confirmed Skill learnings are written to the repo source, sync mirrors with `scripts/sync-onebullex-android-qa-skill.sh`.\n")
+    lines.append("- Create a branch named `codex/onebullex-android-qa-<topic>` and keep the commit scope limited to QA Skill files.\n")
+    lines.append("- Open a PR that links this report, summarizes ADB/device/VPN/recording changes, and lists any remaining risks or manual steps.\n")
     md_path = out_dir / REPORT_NAME
     md_path.write_text("".join(lines), encoding="utf-8")
     (out_dir / BUG_TEMPLATE_NAME).write_text(json.dumps(bug_template(flat_results, out_dir), ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1048,17 +1206,65 @@ def write_reports(out_dir: Path, env: dict[str, Any], setup_notes: list[str], re
 def main() -> int:
     args = parse_args()
     require_adb(args.dry_run)
-    serial = choose_serial(args.serial, args.wireless, args.dry_run)
     package = package_for_channel(args.channel, args.package)
     run_name = args.run_name or dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     out_dir = Path(args.out_dir).expanduser() / run_name
     out_dir.mkdir(parents=True, exist_ok=True)
+    recording_artifacts = maybe_seed_recording(args, out_dir)
+    if args.adb_stability_check or not args.dry_run:
+        serial, adb_meta, adb_notes = ensure_adb_stable(
+            requested_serial=args.serial,
+            wireless=args.wireless if args.device_discovery_mode in {"wifi", "auto"} else None,
+            retries=args.adb_stability_retries,
+            interval_ms=args.adb_stability_interval_ms,
+            dry_run=args.dry_run,
+        )
+    else:
+        serial = choose_serial(args.serial, args.wireless, args.dry_run)
+        adb_meta = {
+            "adb_devices_snapshot": "",
+            "adb_target_serial": serial,
+            "adb_connection_mode": "wifi" if args.wireless else "usb",
+            "adb_stability_check_passed": False,
+            "adb_stability_attempts": 0,
+            "adb_detected_model": "",
+            "adb_detected_device": "",
+            "adb_transport_id": "",
+        }
+        adb_notes = ["ADB stability gate was not explicitly requested; using legacy serial selection."]
     version_gate, gate_notes = run_version_gate(args, serial, package, out_dir)
     if args.version_check_only:
         print(f"APK version check: {out_dir / 'apk-version-check.json'}")
         return 0 if args.dry_run or (version_gate or {}).get("status") == "latest" else 10
     device = AdbDevice(serial, dry_run=args.dry_run)
-    setup_notes = gate_notes + prepare_device(device, package, args.activity, args.no_launch, args.force_stop_before_launch)
+    setup_notes = adb_notes + gate_notes + prepare_device_state(device, package, args.activity, args.no_launch, args.force_stop_before_launch)
+    driver = UIDriver(device, out_dir)
+    vpn_meta: dict[str, Any] = {}
+    flow_paths = resolve_flows(args.flow)
+    flows_require_vpn = False
+    for flow_path in flow_paths:
+        flow_data = load_yaml(flow_path)
+        if bool(flow_data.get("requires_vpn", False)):
+            flows_require_vpn = True
+            break
+    if not args.skip_vpn_check and args.vpn_mode != "off" and (args.vpn_mode == "required" or flows_require_vpn):
+        vpn_meta, vpn_notes = ensure_vpn(
+            device,
+            driver,
+            package=args.vpn_package,
+            target_mode=args.vpn_target_mode,
+            failure_policy=args.vpn_failure_policy,
+        )
+        setup_notes.extend(vpn_notes)
+        if vpn_meta.get("vpn_manual_intervention_required"):
+            raise DriverError("VPN requires manual intervention before QA can continue.")
+    recording_meta = {
+        "record_replay_used": bool(args.record_replay_session),
+        "recording_source_path": str(Path(args.record_replay_session).expanduser()) if args.record_replay_session else "",
+        "flow_seed_generated": bool(recording_artifacts),
+        "recording_sensitive_input_redacted": bool(recording_artifacts),
+        "selector_hardening_required": bool(recording_artifacts),
+    }
     env = collect_environment(
         device,
         args.channel,
@@ -1068,14 +1274,15 @@ def main() -> int:
         version_gate,
         args.requirement_doc,
         args.device_start_state,
+        adb_meta,
+        vpn_meta,
+        recording_meta,
     )
-    driver = UIDriver(device, out_dir)
     all_results: list[StepResult] = []
-    flow_paths = resolve_flows(args.flow)
     flow_inputs = parse_cli_inputs(args.input)
     for flow_path in flow_paths:
         all_results.extend(run_flow(driver, flow_path, out_dir, args.evidence_level, args.allow_side_effects, flow_inputs))
-    md_path, _ = write_reports(out_dir, env, setup_notes, all_results, flow_paths)
+    md_path, _ = write_reports(out_dir, env, setup_notes, all_results, flow_paths, recording_artifacts)
     print(f"Report: {md_path}")
     print(f"Bug template: {out_dir / BUG_TEMPLATE_NAME}")
     return 0

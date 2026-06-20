@@ -24,6 +24,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run OneBullEx Android QA via adb and Flow DSL.")
     parser.add_argument("--serial")
     parser.add_argument("--wireless")
+    parser.add_argument("--device-discovery-mode", choices=["usb", "wifi", "auto"], default="auto")
+    parser.add_argument("--adb-stability-check", action="store_true")
+    parser.add_argument("--adb-stability-retries", type=int, default=3)
+    parser.add_argument("--adb-stability-interval-ms", type=int, default=800)
     parser.add_argument("--channel", choices=["dev", "prod"], default="dev")
     parser.add_argument("--package")
     parser.add_argument("--activity", default="com.icy.neptune.MainActivity")
@@ -42,13 +46,43 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device-start-state")
     parser.add_argument("--force-stop-before-launch", action="store_true")
     parser.add_argument("--evidence-level", choices=["minimal", "normal", "full"], default="normal")
+    parser.add_argument("--vpn-mode", choices=["off", "auto", "required"], default="auto")
+    parser.add_argument("--vpn-package", default="com.follow.clash")
+    parser.add_argument("--vpn-target-mode", default="reuse_last")
+    parser.add_argument("--vpn-failure-policy", default="pause_for_manual")
+    parser.add_argument("--skip-vpn-check", action="store_true")
+    parser.add_argument("--device-control-profile", choices=["default", "overlay", "download-install"], default="default")
+    parser.add_argument("--record-replay-session")
+    parser.add_argument("--generate-flow-seed-from-recording", action="store_true")
+    parser.add_argument("--recording-label")
     parser.add_argument("--input", action="append", default=[], metavar="KEY=VALUE", help="Flow input value for {{ inputs.key }} templates.")
     return parser.parse_args()
 
 
 def run_flow(args: argparse.Namespace, flow: str) -> int:
     cmd = [sys.executable, str(FLOW_RUNNER), flow]
-    for opt in ["serial", "wireless", "channel", "package", "activity", "out_dir", "run_name", "evidence_level", "requirement_doc", "device_start_state"]:
+    for opt in [
+        "serial",
+        "wireless",
+        "device_discovery_mode",
+        "adb_stability_retries",
+        "adb_stability_interval_ms",
+        "channel",
+        "package",
+        "activity",
+        "out_dir",
+        "run_name",
+        "evidence_level",
+        "requirement_doc",
+        "device_start_state",
+        "vpn_mode",
+        "vpn_package",
+        "vpn_target_mode",
+        "vpn_failure_policy",
+        "device_control_profile",
+        "record_replay_session",
+        "recording_label",
+    ]:
         val = getattr(args, opt)
         if val:
             cmd.extend(["--" + opt.replace("_", "-"), str(val)])
@@ -56,6 +90,8 @@ def run_flow(args: argparse.Namespace, flow: str) -> int:
         cmd.append("--no-launch")
     if args.dry_run:
         cmd.append("--dry-run")
+    if args.adb_stability_check:
+        cmd.append("--adb-stability-check")
     if args.allow_side_effects:
         cmd.append("--allow-side-effects")
     if args.skip_version_check:
@@ -68,6 +104,10 @@ def run_flow(args: argparse.Namespace, flow: str) -> int:
         cmd.append("--accept-version-gate-risk")
     if args.force_stop_before_launch:
         cmd.append("--force-stop-before-launch")
+    if args.skip_vpn_check:
+        cmd.append("--skip-vpn-check")
+    if args.generate_flow_seed_from_recording:
+        cmd.append("--generate-flow-seed-from-recording")
     for item in args.input:
         cmd.extend(["--input", item])
     return subprocess.run(cmd).returncode

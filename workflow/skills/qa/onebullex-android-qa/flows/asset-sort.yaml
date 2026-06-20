@@ -1,6 +1,8 @@
 {
   "name": "asset-sort",
   "version": 1,
+  "requires_device_unlocked": true,
+  "device_start_hints": ["onebullex-launchable", "assets-tab-reachable"],
   "steps": [
     {"name": "open_assets_tab", "action": "tap", "selector": {"desc": "tab-assets", "text_regex": "资产|Assets|总览", "fallback": [990, 2480]}, "snapshot": true, "failure_category": "automation_issue"},
     {"name": "assert_assets_overview", "action": "assert_assets", "mode": "overview", "snapshot": true, "bug_candidate": true, "failure_category": "product_bug"},
