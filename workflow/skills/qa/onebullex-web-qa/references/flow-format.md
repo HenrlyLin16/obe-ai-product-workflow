@@ -137,3 +137,30 @@ Rules:
 Any flow with `side_effects: blocked-by-default` or `side_effects: testnet-submit` must include a final `safety_gate` step. The gate must declare `requires_side_effect: true`, and final order submission must also declare `requires_confirm_submit: true`.
 
 Default behavior is to stop before final submit. Testnet real submit requires explicit user confirmation and CLI flags.
+
+## Professional QA Metadata
+
+Every flow must declare professional QA metadata:
+
+```yaml
+test_level: L0|L1|L2|L3|L4
+risk_level: low|medium|high|critical
+required_runtime: playwright|codex
+requires_clash_vpn: true|false
+requires_system_proxy: true|false
+requires_traffic_gt_0kb: true|false
+oracle_type: [dom, api, ws, state, visual, negative]
+side_effect_level: none|login|dry_run|submit|withdraw
+recording_seeded: true|false
+manual_oracle_required: true|false
+```
+
+`L3` flows must stop at a `safety_gate` unless explicitly confirmed. `L4` flows must include `visual` oracle coverage.
+
+## Clash VPN Gate
+
+Use `requires_clash_vpn: true` only when the flow requires the Mac ClashX Pro network path. VPN readiness is governed by `references/clash-vpn-gate.md`; failures are environment blockers or service degradation, not product bugs.
+
+## Record & Replay
+
+Recordings may set `recording_seeded: true` only after human-confirmed candidates are converted into route-backed selectors and Flow DSL. Raw recordings are not formal flows.

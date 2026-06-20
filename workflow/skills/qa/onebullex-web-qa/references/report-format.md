@@ -78,3 +78,18 @@ Default policy:
 - `visual_polish` and `needs_design_confirmation` are design debt by default, not Zentao bugs.
 - Every UX/UI bug candidate must cite screenshot evidence.
 - Cross-viewport findings (desktop vs mobile inconsistency) are tagged `both` and may be treated as `ui_inconsistency`.
+
+## Professional QA Extensions
+
+Reports also include:
+
+- `## Test Level & Risk`: L0-L4 level, risk, side-effect level.
+- `## Clash VPN Gate`: app path, app running, system proxy, traffic `>0kb`, HTTP/REST/WS probes, manual confirmation.
+- `## Preconditions`: account, health, VPN, data, and safety preconditions.
+- `## Oracle Coverage`: DOM/API/WS/state/visual/negative coverage.
+- `## Route & Selector Stability`: route-backed selectors and fallback notes.
+- `## Flakiness Notes`: fixed sleeps, retry policy, inconclusive evidence.
+- `## Evidence Index`: local evidence files grouped by flow.
+- `## Release Readiness`: PR readiness checks when requested.
+
+A product bug should not be drafted unless oracle evidence rules in `references/oracle-policy.md` are satisfied.
