@@ -1,0 +1,252 @@
+{
+  "name": "contract-special-regression",
+  "version": 1,
+  "side_effects": "blocked-by-default",
+  "requires_device_unlocked": true,
+  "device_start_hints": [
+    "dev-test-account",
+    "logged-in",
+    "futures-trading-page-reachable",
+    "user-approved-dev-transfer-and-trading-side-effects"
+  ],
+  "recording_seeded": true,
+  "inputs": {
+    "test_cost_usdt": {
+      "required": false,
+      "default": "1",
+      "description": "Small dev-environment order cost used for position lifecycle checks."
+    }
+  },
+  "steps": [
+    {
+      "name": "launch_onebullex_dev",
+      "action": "launch_app",
+      "package": "com.onemore.onebullex.dev",
+      "activity": "com.icy.neptune.MainActivity",
+      "snapshot": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "open_futures_trading_page",
+      "action": "tap",
+      "selector": {
+        "text": "合约",
+        "fallback": [
+          600,
+          2480
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_futures_core_widgets",
+      "action": "assert_text",
+      "all": [
+        "资金费率/倒计时",
+        "最大可开",
+        "开多",
+        "开空",
+        "持仓",
+        "当前委托"
+      ],
+      "snapshot": true,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "open_order_unit_sheet",
+      "action": "tap",
+      "selector": {
+        "text_regex": "USDT|BTC",
+        "fallback": [
+          560,
+          855
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_order_unit_options",
+      "action": "assert_text",
+      "all": [
+        "按币下单（BTC）",
+        "按价值下单（USDT）",
+        "按成本下单（USDT）"
+      ],
+      "snapshot": true,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "select_cost_unit",
+      "action": "tap",
+      "selector": {
+        "text": "按成本下单（USDT）",
+        "fallback": [
+          320,
+          2345
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_cost_unit_depth_and_max_open",
+      "action": "assert_text",
+      "all": [
+        "最大可开",
+        "价值",
+        "(USDT)"
+      ],
+      "snapshot": true,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "observe_orderbook_before_wait",
+      "action": "snapshot",
+      "label": "订单簿刷新前",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "wait_for_orderbook_refresh",
+      "action": "sleep",
+      "seconds": 6
+    },
+    {
+      "name": "observe_orderbook_after_wait",
+      "action": "snapshot",
+      "label": "订单簿刷新后",
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "open_leverage_panel",
+      "action": "tap",
+      "selector": {
+        "text_regex": "\\d+X|\\d+x",
+        "fallback": [
+          575,
+          385
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_high_leverage_risk_copy",
+      "action": "assert_text",
+      "any": [
+        "强平风险",
+        "放大亏损",
+        "超过[10x]杠杆交易"
+      ],
+      "snapshot": true,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "side_effect_gate_before_test_trade",
+      "action": "safety_gate",
+      "requires_side_effect": true,
+      "failure_category": "environment_blocker"
+    },
+    {
+      "name": "input_small_cost",
+      "action": "input",
+      "selector": {
+        "fallback": [
+          220,
+          855
+        ]
+      },
+      "value": "{{ inputs.test_cost_usdt }}",
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "tap_open_long",
+      "action": "tap",
+      "selector": {
+        "text": "开多",
+        "fallback": [
+          355,
+          1455
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "confirm_order_if_present",
+      "branch": {
+        "timeout": 2,
+        "cases": [
+          {
+            "name": "order_confirm_visible",
+            "match": {
+              "text": "订单确认"
+            },
+            "then": [
+              {
+                "tap": {
+                  "text": "确认",
+                  "fallback": [
+                    600,
+                    2480
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "assert_position_created",
+      "action": "assert_text",
+      "any": [
+        "持仓(1)",
+        "未实现盈亏",
+        "平仓"
+      ],
+      "snapshot": true,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "open_position_tpsl",
+      "action": "tap",
+      "selector": {
+        "text": "止盈/止损",
+        "fallback": [
+          285,
+          2320
+        ]
+      },
+      "snapshot": true,
+      "failure_category": "automation_issue"
+    },
+    {
+      "name": "assert_position_tpsl_copy",
+      "action": "assert_text",
+      "all": [
+        "持仓止盈止损",
+        "整个仓位",
+        "部分仓位",
+        "止盈",
+        "止损",
+        "触发价格"
+      ],
+      "snapshot": true,
+      "bug_candidate": true,
+      "failure_category": "product_bug"
+    },
+    {
+      "name": "close_position_cleanup_required",
+      "action": "log",
+      "message": "Clean up the dev test position with the position close flow before ending the run."
+    }
+  ]
+}
